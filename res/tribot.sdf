@@ -1,9 +1,7 @@
+<?xml version='1.0' ?>
 <sdf version='1.6'>
-  <model name='CartPole'>
-    <!-- This sdf file produces a model with the default parameters as
-         documented in cart_pole_params.named_vector.
-         They MUST be kept in sync. -->
-    <link name='Cart'>
+  <model name='Tribot'>
+    <link name='cart'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <mass>10.0</mass>
@@ -28,10 +26,8 @@
       </visual>
     </link>
 
-    <link name='Pole'>
-      <!-- The pole is modeled as a point mass at the end of a pole. -->
-      <!-- The length of the pole is 0.5 meters. -->
-      <pose>0 0 -0.5 0 0 0</pose>
+    <link name='major_link'>
+      <pose>0 0 0.5 0 0 0</pose>
       <inertial>
         <mass>1.0</mass>
         <!-- A point mass has zero rotational inertia.
@@ -43,47 +39,123 @@
         </inertia>
       </inertial>
 
-      <visual name='pole_point_mass'>
+      <visual name='vis_cylinder'>
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <sphere>
-            <radius>0.05</radius>
-          </sphere>
+          <cylinder>
+            <radius>0.1</radius>
+            <length>1</length>
+          </cylinder>
         </geometry>
       </visual>
-      <visual name='pole_rod'>
-        <pose>0 0 0.25 0 0 0</pose>
+      <collision name='col_cylinder'>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.025</radius>
+            <radius>0.1</radius>
+            <length>1</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <visual name='vis_major_wheel_joint'>
+        <pose>0 0 -0.5 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.1</radius>
+            <length>0.3</length>
+          </cylinder>
+        </geometry>
+      </visual>
+      <collision name='col_major_wheel_joint'>
+        <pose>0 0 -0.5 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.1</radius>
+            <length>0.3</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <visual name='vis_mid_joint'>
+        <pose>0 0 0.5 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.1</radius>
+            <length>0.2</length>
+          </cylinder>
+        </geometry>
+      </visual>
+      <collision name='col_mid_joint'>
+        <pose>0 0 0.5 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.1</radius>
+            <length>0.2</length>
+          </cylinder>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name='minor_link'>
+      <pose>0.25 0 1.25 0 0 0</pose>
+      <self_collide>0</self_collide>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>30.0</mass>
+      </inertial>
+
+      <visual name='vis_cylinder'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.1</radius>
             <length>0.5</length>
           </cylinder>
         </geometry>
       </visual>
+      <collision name='col_cylinder'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.1</radius>
+            <length>0.5</length>
+          </cylinder>
+        </geometry>
+      </collision>
     </link>
 
-    <joint name='CartSlider' type='prismatic'>
-      <parent>world</parent>
-      <child>Cart</child>
+    <joint name='major_link_wheel_joint' type='revolute'>
+      <parent>cart</parent>
+      <child>major_link</child>
       <axis>
-        <xyz>1.0 0.0 0.0</xyz>
-      </axis>
-
-    </joint>
-
-    <joint name='PolePin' type='revolute'>
-      <!-- Pose of the joint frame in the pole's frame (located at the point
-           mass) -->
-      <pose>0 0 0.5 0 0 0</pose>
-      <parent>Cart</parent>
-      <child>Pole</child>
-      <axis>
-        <xyz>0.0 -1.0 0.0</xyz>
+        <xyz>1.0 0 0</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
         <limit>
-          <!-- The pole pin joint is not actuated. -->
-          <effort>0</effort>
+          <effort>0.0</effort>
         </limit>
       </axis>
     </joint>
+
+    <joint name='MidJoint' type='revolute'>
+      <parent>major_link</parent>
+      <child>minor_link</child>
+      <axis>
+        <xyz>1.0 0 0</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='CartSlider' type='prismatic'>
+      <parent>world</parent>
+      <child>cart</child>
+      <axis>
+        <xyz>1.0 0.0 0.0</xyz>
+      </axis>
+    </joint>
+
   </model>
 </sdf>

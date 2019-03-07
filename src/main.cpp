@@ -84,11 +84,11 @@ int do_main() {
 
     // Get joints so that we can set initial conditions.
     const PrismaticJoint<double>& cart_slider = tribot.GetJointByName<PrismaticJoint>("CartSlider");
-    const RevoluteJoint<double>& pole_pin = tribot.GetJointByName<RevoluteJoint>("PolePin");
+    const RevoluteJoint<double>& mid_joint = tribot.GetJointByName<RevoluteJoint>("MidJoint");
 
     // Set initial state.
     cart_slider.set_translation(&tribot_context, 0.0);
-    pole_pin.set_angle(&tribot_context, 2.0);
+    mid_joint.set_angle(&tribot_context, 2.0);
 
     systems::Simulator<double> simulator(*diagram, std::move(diagram_context));
 
