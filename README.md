@@ -20,5 +20,5 @@ mkdir build && cd build
 cmake ..
 make
 /opt/drake/bin/drake-visualizer&
-./tribot
+./tribot -- [-simulation_time +inf] [-target_realtime_rate 1.0] [-time_step 0]
 ```
