@@ -153,7 +153,7 @@
       <parent>world</parent>
       <child>cart</child>
       <axis>
-        <xyz>1.0 0.0 0.0</xyz>
+        <xyz>0.0 1.0 0.0</xyz>
       </axis>
     </joint>
 
