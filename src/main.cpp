@@ -49,14 +49,16 @@ DEFINE_double(time_step, 0,
 int do_main() {
     systems::DiagramBuilder<double> builder;
 
-    SceneGraph<double>& scene_graph = *builder.AddSystem<SceneGraph>();
+    auto pair = AddMultibodyPlantSceneGraph(&builder, std::make_unique<MultibodyPlant<double>>(FLAGS_time_step));
+
+    MultibodyPlant<double>& tribot = pair.plant;
+
+    SceneGraph<double>& scene_graph = pair.scene_graph;
     scene_graph.set_name("scene_graph");
 
     // Make and add the tribot model.
     const std::string full_name = getSrcDir() + "/../res/tribot.sdf";
 
-    MultibodyPlant<double>& tribot =
-        *builder.AddSystem<MultibodyPlant>(FLAGS_time_step);
     Parser(&tribot, &scene_graph).AddModelFromFile(full_name);
 
     // Add gravity to the model.
@@ -67,10 +69,6 @@ int do_main() {
 
     // Sanity check on the availability of the optional source id before using it.
     DRAKE_DEMAND(tribot.geometry_source_is_registered());
-
-    builder.Connect(
-            tribot.get_geometry_poses_output_port(),
-            scene_graph.get_source_pose_port(tribot.get_source_id().value()));
 
     geometry::ConnectDrakeVisualizer(&builder, scene_graph);
     auto diagram = builder.Build();
