@@ -87,9 +87,9 @@ int do_main() {
     const RevoluteJoint<double>& mid_joint = tribot.GetJointByName<RevoluteJoint>("mid_joint");
 
     // Set initial state.
-    major_link_wheel_joint.set_angle(&tribot_context, 0.0);
     wheel_slider.set_translation(&tribot_context, 0.0);
-    mid_joint.set_angle(&tribot_context, 0.0);
+    major_link_wheel_joint.set_angle(&tribot_context, 1.0);
+    mid_joint.set_angle(&tribot_context, 1.0);
 
     systems::Simulator<double> simulator(*diagram, std::move(diagram_context));
 
