@@ -1,4 +1,5 @@
 #include <memory>
+#include <math.h>
 
 #include <gflags/gflags.h>
 
@@ -83,12 +84,14 @@ int do_main() {
     tribot_context.FixInputPort(tribot.get_actuation_input_port().get_index(), Vector1d(0));
 
     // Get joints so that we can set initial conditions.
-    const PrismaticJoint<double>& cart_slider = tribot.GetJointByName<PrismaticJoint>("CartSlider");
-    const RevoluteJoint<double>& mid_joint = tribot.GetJointByName<RevoluteJoint>("MidJoint");
+    const RevoluteJoint<double>& major_link_wheel_joint = tribot.GetJointByName<RevoluteJoint>("major_link_wheel_joint");
+    const PrismaticJoint<double>& wheel_slider = tribot.GetJointByName<PrismaticJoint>("wheel_slider");
+    const RevoluteJoint<double>& mid_joint = tribot.GetJointByName<RevoluteJoint>("mid_joint");
 
     // Set initial state.
-    cart_slider.set_translation(&tribot_context, 0.0);
-    mid_joint.set_angle(&tribot_context, 2.0);
+    major_link_wheel_joint.set_angle(&tribot_context, 0.0);
+    wheel_slider.set_translation(&tribot_context, 0.0);
+    mid_joint.set_angle(&tribot_context, 0.0);
 
     systems::Simulator<double> simulator(*diagram, std::move(diagram_context));
 
