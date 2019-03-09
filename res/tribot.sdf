@@ -101,8 +101,11 @@
       <pose>0 0 1 0 0 0</pose>
       <self_collide>0</self_collide>
       <inertial>
-        <pose>0 0 0 0 0 0</pose>
         <mass>30.0</mass>
+        <inertia>
+          <ixx>1.0e-20</ixx><iyy>1.0e-20</iyy><izz>1.0e-20</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
       </inertial>
 
       <visual name='vis_cylinder'>
