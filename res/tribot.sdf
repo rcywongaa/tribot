@@ -27,6 +27,7 @@
     </link>
 
     <link name='major_link'>
+      <self_collide>0</self_collide>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <pose>0 0 0.5 0 0 0</pose>
