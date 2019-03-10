@@ -38,7 +38,7 @@ DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
         "Simulator::set_target_realtime_rate() for details.");
 
-DEFINE_double(simulation_time, 10.0,
+DEFINE_double(simulation_time, std::numeric_limits<double>::infinity(),
         "Desired duration of the simulation in seconds.");
 
 DEFINE_double(time_step, 0,
