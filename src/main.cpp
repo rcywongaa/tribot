@@ -67,7 +67,7 @@ int do_main() {
     //Parser(&plant, &scene_graph).AddModelFromFile(ground_model_filename);
 
     Vector3<double> normal_W(0, 0, 1);
-    Vector3<double> point_W(0, 0, 0);
+    Vector3<double> point_W(0, 0, -0.10);
 
     const CoulombFriction<double> surface_friction(
       0.8 /* static friction */, 0.3 /* dynamic friction */);
@@ -88,7 +88,7 @@ int do_main() {
     // Now the model is complete.
     plant.Finalize();
 
-    //plant.set_penetration_allowance(1);
+    plant.set_penetration_allowance(0.001);
 
     // Sanity check on the availability of the optional source id before using it.
     DRAKE_DEMAND(plant.geometry_source_is_registered());
@@ -109,8 +109,8 @@ int do_main() {
     const RevoluteJoint<double>& mid_joint = plant.GetJointByName<RevoluteJoint>("mid_joint");
 
     // Set initial state.
-    major_link_wheel_joint.set_angle(&plant_context, 0.1);
-    mid_joint.set_angle(&plant_context, 0.1);
+    major_link_wheel_joint.set_angle(&plant_context, 0.5);
+    mid_joint.set_angle(&plant_context, 1.5);
 
     systems::Simulator<double> simulator(*diagram, std::move(diagram_context));
 

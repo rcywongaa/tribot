@@ -1,16 +1,15 @@
 <?xml version='1.0' ?>
 <sdf version='1.6'>
   <model name='Tribot'>
-    <pose>0 0 0.5 0 0 0</pose>
     <link name='wheel'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
-        <mass>10.0</mass>
+        <mass>1.0</mass>
         <!--TODO: Set correct inertial matrix for wheel -->
-        <inertia>
-          <ixx>1.0e-20</ixx><iyy>1.0e-20</iyy><izz>1.0e-20</izz>
-          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
-        </inertia>
+        <!--<inertia>-->
+          <!--<ixx>1.0e-20</ixx><iyy>1.0e-20</iyy><izz>1.0e-20</izz>-->
+          <!--<ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>-->
+        <!--</inertia>-->
       </inertial>
 
       <visual name='vis_major_wheel_joint'>
@@ -37,15 +36,14 @@
     <link name='major_link'>
       <gravity>true</gravity>
       <self_collide>0</self_collide>
-      <pose>0 0 0 0 0 0</pose>
+      <pose>0 0 0.5 0 0 0</pose>
       <inertial>
-        <pose>0 0 0.5 0 0 0</pose>
         <mass>1.0</mass>
         <!--TODO: Set correct inertial matrix for cylinder -->
       </inertial>
 
       <visual name='vis_cylinder'>
-        <pose>0 0 0.5 0 0 0</pose>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.1</radius>
@@ -54,7 +52,7 @@
         </geometry>
       </visual>
       <collision name='col_cylinder'>
-        <pose>0 0 0.5 0 0 0</pose>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.1</radius>
@@ -64,7 +62,7 @@
       </collision>
 
       <visual name='vis_mid_joint'>
-        <pose>0 0 1 0 1.5708 0</pose>
+        <pose>0 0 0.5 0 1.5708 0</pose>
         <geometry>
           <cylinder>
             <radius>0.1</radius>
@@ -73,7 +71,7 @@
         </geometry>
       </visual>
       <collision name='col_mid_joint'>
-        <pose>0 0 1 0 1.5708 0</pose>
+        <pose>0 0 0.5 0 1.5708 0</pose>
         <geometry>
           <cylinder>
             <radius>0.1</radius>
@@ -85,16 +83,15 @@
 
     <link name='minor_link'>
       <gravity>true</gravity>
-      <pose>0 0 1 0 0 0</pose>
+      <pose>0 0 1.25 0 0 0</pose>
       <self_collide>0</self_collide>
       <inertial>
-        <pose>0 0 0.25 0 0 0</pose>
-        <mass>10.0</mass>
+        <mass>1.0</mass>
         <!--TODO: Set correct inertial matrix for cylinder -->
       </inertial>
 
       <visual name='vis_cylinder'>
-        <pose>0 0 0.25 0 0 0</pose>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.1</radius>
@@ -103,7 +100,7 @@
         </geometry>
       </visual>
       <collision name='col_cylinder'>
-        <pose>0 0 0.25 0 0 0</pose>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.1</radius>
@@ -114,6 +111,8 @@
     </link>
 
     <joint name='major_link_wheel_joint' type='revolute'>
+      <!--With respect to child frame-->
+      <pose>0 0 -0.5 0 0 0</pose>
       <parent>wheel</parent>
       <child>major_link</child>
       <axis>
@@ -123,6 +122,8 @@
     </joint>
 
     <joint name='mid_joint' type='revolute'>
+      <!--With respect to child frame-->
+      <pose>0 0 -0.25 0 0 0</pose>
       <parent>major_link</parent>
       <child>minor_link</child>
       <axis>
