@@ -35,7 +35,7 @@ using drake::multibody::RevoluteJoint;
 using drake::multibody::UniformGravityFieldElement;
 using drake::geometry::HalfSpace;
 using drake::multibody::CoulombFriction;
-using Eigen::Vector2d;
+using Eigen::Vector3d;
 
 DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
@@ -67,7 +67,7 @@ int do_main() {
     //Parser(&plant, &scene_graph).AddModelFromFile(ground_model_filename);
 
     Vector3<double> normal_W(0, 0, 1);
-    Vector3<double> point_W(0, 0, -0.10);
+    Vector3<double> point_W(0, 0, -0.25);
 
     const CoulombFriction<double> surface_friction(
       0.8 /* static friction */, 0.3 /* dynamic friction */);
@@ -102,15 +102,17 @@ int do_main() {
     systems::Context<double>& plant_context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
 
     // Joints must be specified without <limit><effort>0.0</effort></limit> to be treated as an actuation input
-    plant_context.FixInputPort(plant.get_actuation_input_port().get_index(), Vector2d(0.0, 0.0));
+    plant_context.FixInputPort(plant.get_actuation_input_port().get_index(), Vector3d(5.0, 0.0, -5.0));
 
     // Get joints so that we can set initial conditions.
     const RevoluteJoint<double>& major_link_wheel_joint = plant.GetJointByName<RevoluteJoint>("major_link_wheel_joint");
     const RevoluteJoint<double>& mid_joint = plant.GetJointByName<RevoluteJoint>("mid_joint");
+    const RevoluteJoint<double>& minor_link_wheel_joint = plant.GetJointByName<RevoluteJoint>("minor_link_wheel_joint");
 
     // Set initial state.
     major_link_wheel_joint.set_angle(&plant_context, 0.5);
     mid_joint.set_angle(&plant_context, 1.5);
+    minor_link_wheel_joint.set_angle(&plant_context, 0.5);
 
     systems::Simulator<double> simulator(*diagram, std::move(diagram_context));
 

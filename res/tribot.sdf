@@ -1,22 +1,24 @@
 <?xml version='1.0' ?>
 <sdf version='1.6'>
   <model name='Tribot'>
-    <link name='wheel'>
+    <!--
+      Wheel is a cylinder of mass 10, radius 0.2, thickness 0.3
+    -->
+    <link name='major_wheel'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
-        <mass>1.0</mass>
-        <!--TODO: Set correct inertial matrix for wheel -->
-        <!--<inertia>-->
-          <!--<ixx>1.0e-20</ixx><iyy>1.0e-20</iyy><izz>1.0e-20</izz>-->
-          <!--<ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>-->
-        <!--</inertia>-->
+        <mass>10.0</mass>
+        <inertia>
+          <ixx>0.175</ixx><iyy>0.175</iyy><izz>0.2</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
       </inertial>
 
       <visual name='vis_major_wheel_joint'>
         <pose>0 0 0 0 1.5708 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.1</radius>
+            <radius>0.2</radius>
             <length>0.3</length>
           </cylinder>
         </geometry>
@@ -25,7 +27,7 @@
         <pose>0 0 0 0 1.5708 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.1</radius>
+            <radius>0.2</radius>
             <length>0.3</length>
           </cylinder>
         </geometry>
@@ -110,14 +112,45 @@
       </collision>
     </link>
 
+    <link name='minor_wheel'>
+      <pose>0 0 1.5 0 0 0</pose>
+      <inertial>
+        <mass>10.0</mass>
+        <inertia>
+          <ixx>0.175</ixx><iyy>0.175</iyy><izz>0.2</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name='vis_major_wheel_joint'>
+        <pose>0 0 0 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.2</radius>
+            <length>0.3</length>
+          </cylinder>
+        </geometry>
+      </visual>
+      <collision name='col_major_wheel_joint'>
+        <pose>0 0 0 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.2</radius>
+            <length>0.3</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+    </link>
+
     <joint name='major_link_wheel_joint' type='revolute'>
       <!--With respect to child frame-->
       <pose>0 0 -0.5 0 0 0</pose>
-      <parent>wheel</parent>
+      <parent>major_wheel</parent>
       <child>major_link</child>
       <axis>
         <xyz>1.0 0 0</xyz>
-        <use_parent_model_frame>true</use_parent_model_frame>
+        <!--<use_parent_model_frame>true</use_parent_model_frame>-->
       </axis>
     </joint>
 
@@ -129,6 +162,17 @@
       <axis>
         <xyz>1.0 0 0</xyz>
         <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+    </joint>
+
+    <joint name='minor_link_wheel_joint' type='revolute'>
+      <!--With respect to child frame-->
+      <pose>0 0 0 0 0 0</pose>
+      <parent>minor_link</parent>
+      <child>minor_wheel</child>
+      <axis>
+        <xyz>1.0 0 0</xyz>
+        <!--<use_parent_model_frame>true</use_parent_model_frame>-->
       </axis>
     </joint>
 
