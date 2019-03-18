@@ -13,6 +13,10 @@ cd src/particles
 ./uniformly_accelerated_particle
 ```
 
+# Generate resources
+
+    erb res/tribot.rsdf > res/tribot.sdf
+
 # Build & Run
 
 ```
