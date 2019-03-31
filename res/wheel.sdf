@@ -1,0 +1,98 @@
+<?xml version='1.0' ?>
+
+<!-- THIS FILE IS GENERATED FROM wheel.rsdf -->
+
+<sdf version='1.6'>
+  <model name='Wheel'>
+    <link name='axle_y'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+      </inertial>
+
+      <visual name='slider_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.5 0.1 0.1</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name='axle_z'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+      </inertial>
+    </link>
+
+    <link name='wheel'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>10.0</mass>
+        <inertia>
+          <ixx>0.175</ixx>
+          <iyy>0.175</iyy>
+          <izz>0.20000000000000004</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name='vis_wheel'>
+        <pose>0 0 0 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.2</radius>
+            <length>0.3</length>
+          </cylinder>
+        </geometry>
+      </visual>
+      <collision name='col_wheel'>
+        <pose>0 0 0 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.2</radius>
+            <length>0.3</length>
+          </cylinder>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name='axle_y_slider' type='prismatic'>
+      <pose>0 0 0 0 0 0</pose>
+      <parent>world</parent>
+      <child>axle_y</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='axle_z_slider' type='prismatic'>
+      <pose>0 0 0 0 0 0</pose>
+      <parent>axle_y</parent>
+      <child>axle_z</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='wheel_joint' type='revolute'>
+      <!--With respect to child frame-->
+      <pose>0 0 0 0 0 0</pose>
+      <parent>axle_z</parent>
+      <child>wheel</child>
+      <axis>
+        <xyz>1.0 0 0</xyz>
+        <!--<use_parent_model_frame>true</use_parent_model_frame>-->
+      </axis>
+    </joint>
+
+  </model>
+</sdf>
