@@ -1,0 +1,86 @@
+<?xml version='1.0' ?>
+
+<!-- THIS FILE IS GENERATED FROM segway.rsdf -->
+
+<sdf version='1.6'>
+  <model name='Segway'>
+    <link name='wheel'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>10.0</mass>
+        <inertia>
+          <ixx>0.175</ixx>
+          <iyy>0.175</iyy>
+          <izz>0.20000000000000004</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name='vis_wheel_joint'>
+        <pose>0 0 0 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.2</radius>
+            <length>0.3</length>
+          </cylinder>
+        </geometry>
+      </visual>
+      <collision name='col_wheel_joint'>
+        <pose>0 0 0 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.2</radius>
+            <length>0.3</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+    </link>
+
+    <link name='major_link'>
+      <gravity>true</gravity>
+      <self_collide>0</self_collide>
+      <pose>0 0 0.5 0 0 0</pose>
+      <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>0</ixx>
+            <iyy>16.666666666666664</iyy>
+            <izz>16.666666666666664</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+      </inertial>
+
+      <visual name='vis_cylinder'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.1</radius>
+            <length>1</length>
+          </cylinder>
+        </geometry>
+      </visual>
+      <collision name='col_cylinder'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.1</radius>
+            <length>1</length>
+          </cylinder>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name='major_link_wheel_joint' type='revolute'>
+      <!--With respect to child frame-->
+      <pose>0 0 -0.5 0 0 0</pose>
+      <parent>wheel</parent>
+      <child>major_link</child>
+      <axis>
+        <xyz>1.0 0 0</xyz>
+        <!--<use_parent_model_frame>true</use_parent_model_frame>-->
+      </axis>
+    </joint>
+
+  </model>
+</sdf>
