@@ -21,3 +21,7 @@ target_link_libraries(segway
   drake::drake drake::drake-common-text-logging-gflags gflags_shared
 )
 
+add_executable(wheel src/wheel_main.cpp)
+target_link_libraries(wheel
+  drake::drake drake::drake-common-text-logging-gflags gflags_shared
+)
