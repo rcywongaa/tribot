@@ -25,3 +25,8 @@ add_executable(wheel src/wheel_main.cpp)
 target_link_libraries(wheel
   drake::drake drake::drake-common-text-logging-gflags gflags_shared
 )
+
+add_executable(cart_pole src/cart_pole_main.cpp)
+target_link_libraries(cart_pole
+  drake::drake drake::drake-common-text-logging-gflags gflags_shared
+)
