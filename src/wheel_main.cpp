@@ -54,28 +54,6 @@ DEFINE_double(time_step, 0,
         "discrete updates and period equal to this time_step. "
         "If 0, the plant is modeled as a continuous system.");
 
-std::unique_ptr<systems::AffineSystem<double>> MakeBalancingLQRController(
-        MultibodyPlant<double>& plant, Context<double>& context)
-{
-    const int actuation_port_index = plant.get_actuation_input_port().get_index();
-    context.FixInputPort(actuation_port_index, Vector1d::Constant(0.0));
-    context.FixInputPort(
-            plant.get_applied_generalized_force_input_port().get_index(),
-            Eigen::VectorXd::Constant(7, 0.0));
-    printf("Plant q size: %d\n", plant.num_positions());
-    printf("Plant v size: %d\n", plant.num_velocities());
-
-    Eigen::Matrix4d Q = Eigen::Matrix4d::Identity();
-    Q(0, 0) = 10;
-    Q(1, 1) = 10;
-    Vector1d R = Vector1d::Constant(1);
-
-    return systems::controllers::LinearQuadraticRegulator(
-            plant, context, Q, R,
-            Eigen::Matrix<double, 0, 0>::Zero() /* No cross state/control costs */,
-            actuation_port_index);
-}
-
 int do_main() {
     systems::DiagramBuilder<double> builder;
 
