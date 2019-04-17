@@ -16,7 +16,10 @@ target_link_libraries(tribot
   drake::drake drake::drake-common-text-logging-gflags gflags_shared
 )
 
-add_executable(segway src/segway_main.cpp)
+add_executable(segway
+    src/cart_pole_util.cpp
+    src/mip_util.cpp
+    src/segway_main.cpp)
 target_link_libraries(segway
   drake::drake drake::drake-common-text-logging-gflags gflags_shared
 )

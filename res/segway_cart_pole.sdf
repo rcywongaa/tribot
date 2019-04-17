@@ -1,23 +1,29 @@
 <?xml version='1.0' ?>
 
-<!-- THIS FILE IS GENERATED FROM segway.rsdf -->
+<!-- THIS FILE IS GENERATED FROM segway_cart_pole.rsdf -->
 
 <sdf version='1.6'>
-  <model name='Segway'>
-    <link name='wheel'>
+  <model name='CartPole'>
+    <!-- This sdf file produces a model with the default parameters as
+         documented in cart_pole_params.named_vector.
+         They MUST be kept in sync. -->
+    <link name='wheel_cart'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <mass>10.0</mass>
+        <!-- For this model case, with the cart not having any rotational
+             degrees of freedom, the values of the inertia matrix do not
+             participate in the model. Therefore we just set them to zero
+             (or near to zero since sdformat does not allow exact zeroes
+             for inertia values). -->
         <inertia>
-          <ixx>0.175</ixx>
-          <iyy>0.175</iyy>
-          <izz>0.20000000000000004</izz>
+          <ixx>1.0e-20</ixx><iyy>1.0e-20</iyy><izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
 
       <visual name='vis_wheel_joint'>
-        <pose>0 0 0 1.570795 0 0</pose>
+        <pose>0 0 0 0 1.570795 0</pose>
         <geometry>
           <cylinder>
             <radius>0.2</radius>
@@ -25,8 +31,9 @@
           </cylinder>
         </geometry>
       </visual>
+
       <collision name='col_wheel_joint'>
-        <pose>0 0 0 1.570795 0 0</pose>
+        <pose>0 0 0 0 1.570795 0</pose>
         <geometry>
           <cylinder>
             <radius>0.2</radius>
@@ -71,66 +78,28 @@
       </collision>
     </link>
 
-    <link name='x_dummy'>
-      <pose>0 0 0 0 0 0</pose>
-      <inertial>
-        <mass>1e-6</mass>
-      </inertial>
-    </link>
-
-    <link name='z_dummy'>
-      <pose>0 0 0 0 0 0</pose>
-      <inertial>
-        <mass>1e-6</mass>
-      </inertial>
-    </link>
-
-    <joint name='z' type='prismatic'>
+    <joint name='CartSlider' type='prismatic'>
       <parent>world</parent>
-      <child>z_dummy</child>
-      <pose>0 0 0 0 0 0</pose>
+      <child>wheel_cart</child>
       <axis>
-        <xyz>0 0 1.0</xyz>
-        <limit>
-          <effort>0.0</effort>
-        </limit>
+        <xyz>1.0 0.0 0.0</xyz>
       </axis>
+
     </joint>
 
-    <joint name='x' type='prismatic'>
-      <parent>z_dummy</parent>
-      <child>x_dummy</child>
-      <pose>0 0 0 0 0 0</pose>
-      <axis>
-        <xyz>1.0 0 0</xyz>
-        <limit>
-          <effort>0.0</effort>
-        </limit>
-      </axis>
-    </joint>
-
-    <joint name='theta' type='revolute'>
-      <parent>x_dummy</parent>
-      <child>pole</child>
+    <joint name='PolePin' type='revolute'>
+      <!-- Pose of the joint frame in the pole's frame (located at the point
+           mass) -->
       <pose>0 0 -0.5 0 0 0</pose>
+      <parent>wheel_cart</parent>
+      <child>pole</child>
       <axis>
-        <xyz>0 1.0 0</xyz>
+        <xyz>0.0 -1.0 0.0</xyz>
         <limit>
-          <effort>0.0</effort>
+          <!-- The pole pin joint is not actuated. -->
+          <effort>0</effort>
         </limit>
       </axis>
     </joint>
-
-    <joint name='wheel_pole_joint' type='revolute'>
-      <!--With respect to child frame-->
-      <pose>0 0 0 0 0 0</pose>
-      <parent>pole</parent>
-      <child>wheel</child>
-      <axis>
-        <xyz>0 1.0 0</xyz>
-        <!--<use_parent_model_frame>true</use_parent_model_frame>-->
-      </axis>
-    </joint>
-
   </model>
 </sdf>

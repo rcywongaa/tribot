@@ -20,6 +20,9 @@
 #include "drake/systems/primitives/affine_system.h"
 #include "drake/common/eigen_types.h"
 
+#include "cart_pole_util.hpp"
+#include "mip_util.hpp"
+
 inline const std::string getSrcDir()
 {
     return std::string(__FILE__).erase(std::string(__FILE__).rfind('/')) + "/";
@@ -53,6 +56,11 @@ DEFINE_double(time_step, 0,
         "If greater than zero, the plant is modeled as a system with "
         "discrete updates and period equal to this time_step. "
         "If 0, the plant is modeled as a continuous system.");
+
+std::string getResDir()
+{
+    return getSrcDir() + "/../res/";
+}
 
 int do_main() {
     systems::DiagramBuilder<double> builder;
@@ -95,11 +103,20 @@ int do_main() {
     // Sanity check on the availability of the optional source id before using it.
     DRAKE_DEMAND(plant.geometry_source_is_registered());
 
-    //auto controller = builder.AddSystem(MakeBalancingLQRController(plant));
-    //controller->set_name("controller");
-    //builder.Connect(plant.get_continuous_state_output_port(), controller->get_input_port());
-    //builder.Connect(controller->get_output_port(),plant.get_actuation_input_port());
+    auto controller = builder.AddSystem(MakeCartPoleLQRController(getResDir() + "segway_cart_pole.sdf"));
+    controller->set_name("controller");
+    auto mip_to_cart_pole_state_converter = builder.AddSystem(std::make_unique<MIPToCartPoleStateConverter>());
+    mip_to_cart_pole_state_converter->set_name("mip_to_cart_pole_state_converter");
+    auto cart_pole_to_mip_torque_converter = builder.AddSystem(std::make_unique<CartPoleToMIPTorqueConverter>());
+    cart_pole_to_mip_torque_converter->set_name("cart_pole_to_mip_torque_converter");
+    builder.Connect(plant.get_continuous_state_output_port(), mip_to_cart_pole_state_converter->mip_state_input());
+    builder.Connect(mip_to_cart_pole_state_converter->cart_pole_state_output(), controller->get_input_port());
+    builder.Connect(controller->get_output_port(), cart_pole_to_mip_torque_converter->cart_pole_torque_input());
+    builder.Connect(cart_pole_to_mip_torque_converter->mip_torque_output(), plant.get_actuation_input_port());
 
+    printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
+    printf("plant num positions = %d\n", plant.num_positions());
+    printf("plant num velocities = %d\n", plant.num_velocities());
     geometry::ConnectDrakeVisualizer(&builder, scene_graph);
     auto diagram = builder.Build();
 
@@ -110,13 +127,13 @@ int do_main() {
     systems::Context<double>& context =
         diagram->GetMutableSubsystemContext(plant, diagram_context.get());
 
-    context.FixInputPort(plant.get_actuation_input_port().get_index(), Vector1d::Constant(50.0));
+    //context.FixInputPort(plant.get_actuation_input_port().get_index(), Vector1d::Constant(50.0));
 
     // Get joints so that we can set initial conditions.
-    const RevoluteJoint<double>& major_link_wheel_joint = plant.GetJointByName<RevoluteJoint>("major_link_wheel_joint");
+    const RevoluteJoint<double>& wheel_pole_joint = plant.GetJointByName<RevoluteJoint>("wheel_pole_joint");
 
     // Set initial state.
-    major_link_wheel_joint.set_angle(&context, 0.5);
+    wheel_pole_joint.set_angle(&context, 1.0);
 
     systems::Simulator<double> simulator(*diagram, std::move(diagram_context));
 

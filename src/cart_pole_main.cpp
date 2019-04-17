@@ -66,6 +66,8 @@ int do_main() {
     // Now the model is complete.
     plant.Finalize();
 
+    printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
+
     // Sanity check on the availability of the optional source id before using it.
     DRAKE_DEMAND(plant.geometry_source_is_registered());
 
