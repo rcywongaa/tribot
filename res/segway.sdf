@@ -10,8 +10,8 @@
         <mass>10.0</mass>
         <inertia>
           <ixx>0.175</ixx>
-          <iyy>0.175</iyy>
-          <izz>0.20000000000000004</izz>
+          <iyy>0.20000000000000004</iyy>
+          <izz>0.175</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>

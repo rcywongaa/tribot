@@ -27,8 +27,8 @@
         <mass><%= wheel_mass %></mass>
         <inertia>
           <ixx><%= 1.0/12.0*wheel_mass*(3.0*wheel_radius**2 + wheel_thickness**2) %></ixx>
-          <iyy><%= 1.0/12.0*wheel_mass*(3.0*wheel_radius**2 + wheel_thickness**2) %></iyy>
-          <izz><%= 1.0/2.0 * wheel_mass * wheel_radius**2 %></izz>
+          <iyy><%= 1.0/2.0 * wheel_mass * wheel_radius**2 %></iyy>
+          <izz><%= 1.0/12.0*wheel_mass*(3.0*wheel_radius**2 + wheel_thickness**2) %></izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
