@@ -120,8 +120,8 @@ int do_main() {
     /* Using MIP LQR */
     auto controller = builder.AddSystem(MakeMIPLQRController());
     controller->set_name("MIP_controller");
-    builder.Connect(plant.get_continuous_state_output_port(), controller->get_input_port_estimated_state());
-    builder.Connect(controller->get_output_port_control(), plant.get_actuation_input_port());
+    builder.Connect(plant.get_continuous_state_output_port(), controller->get_input_port());
+    builder.Connect(controller->get_output_port(), plant.get_actuation_input_port());
     /**********/
 
     printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
@@ -137,7 +137,6 @@ int do_main() {
     systems::Context<double>& context =
         diagram->GetMutableSubsystemContext(plant, diagram_context.get());
 
-    context.FixInputPort(controller->get_input_port_desired_state().get_index(), Eigen::Vector4d::Zero());
     // Get joints so that we can set initial conditions.
     const RevoluteJoint<double>& theta = plant.GetJointByName<RevoluteJoint>("theta");
 
