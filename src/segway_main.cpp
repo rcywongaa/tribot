@@ -99,6 +99,10 @@ int do_main() {
     // Now the model is complete.
     plant.Finalize();
 
+    printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
+    printf("plant num positions = %d\n", plant.num_positions());
+    printf("plant num velocities = %d\n", plant.num_velocities());
+
     plant.set_penetration_allowance(0.001);
 
     // Sanity check on the availability of the optional source id before using it.
@@ -120,13 +124,13 @@ int do_main() {
     /* Using MIP LQR */
     auto controller = builder.AddSystem(MakeMIPLQRController());
     controller->set_name("MIP_controller");
-    builder.Connect(plant.get_continuous_state_output_port(), controller->get_input_port());
+    auto simplifier = builder.AddSystem(std::make_unique<MIPStateSimplifier<double>>());
+    simplifier->set_name("MIP_simplifier");
+    builder.Connect(plant.get_continuous_state_output_port(), simplifier->get_full_state_input());
+    builder.Connect(simplifier->get_simplified_state_output(), controller->get_input_port());
     builder.Connect(controller->get_output_port(), plant.get_actuation_input_port());
     /**********/
 
-    printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
-    printf("plant num positions = %d\n", plant.num_positions());
-    printf("plant num velocities = %d\n", plant.num_velocities());
     geometry::ConnectDrakeVisualizer(&builder, scene_graph);
     auto diagram = builder.Build();
 

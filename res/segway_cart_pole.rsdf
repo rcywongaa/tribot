@@ -111,7 +111,7 @@
       <parent>wheel_cart</parent>
       <child>pole</child>
       <axis>
-        <xyz>0.0 -1.0 0.0</xyz>
+        <xyz>0.0 1.0 0.0</xyz>
         <limit>
           <!-- The pole pin joint is not actuated. -->
           <effort>0</effort>

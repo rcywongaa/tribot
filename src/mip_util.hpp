@@ -8,19 +8,51 @@
 
 std::unique_ptr<drake::systems::AffineSystem<double>> MakeMIPLQRController();
 
-class MobileInvertedPendulumPlant : public drake::systems::LeafSystem<double>
+template <typename T>
+class MIPStateSimplifier : public drake::systems::LeafSystem<T>
 {
     public:
+        DRAKE_NO_COPY_NO_MOVE_NO_ASSIGN(MIPStateSimplifier);
+
+        template <typename U>
+        explicit MIPStateSimplifier(const MIPStateSimplifier<U>& other) : MIPStateSimplifier<T>() {}
+
+        MIPStateSimplifier();
+        const drake::systems::InputPort<T>& get_full_state_input() const;
+        const drake::systems::OutputPort<T>& get_simplified_state_output() const;
+    private:
+        void convert(const drake::systems::Context<T>& context, drake::systems::BasicVector<T>* output) const;
+        int input_idx;
+        int output_idx;
+};
+
+std::unique_ptr<MIPStateSimplifier<double>> MakeMIPStateSimplifier();
+
+template <typename T>
+class MobileInvertedPendulumPlant : public drake::systems::LeafSystem<T>
+{
+    public:
+        /* Required to solve "does not support ToAutoDiffXd"
+         * https://drake.mit.edu/doxygen_cxx/group__system__scalar__conversion.html
+         */
+        DRAKE_NO_COPY_NO_MOVE_NO_ASSIGN(MobileInvertedPendulumPlant);
+
+        /* Required to solve "does not support ToAutoDiffXd"
+         * https://drake.mit.edu/doxygen_cxx/group__system__scalar__conversion.html
+         */
+        template <typename U>
+            explicit MobileInvertedPendulumPlant(const MobileInvertedPendulumPlant<U>& other) : MobileInvertedPendulumPlant<T>() {}
+
         MobileInvertedPendulumPlant();
-        const drake::systems::OutputPort<double>& get_state_output() const;
-        const drake::systems::InputPort<double>& get_torque_input() const;
-        void SetDefaultState(const drake::systems::Context<double>&, drake::systems::State<double>* state) const override;
+        const drake::systems::OutputPort<T>& get_state_output() const;
+        const drake::systems::InputPort<T>& get_torque_input() const;
+        void SetDefaultState(const drake::systems::Context<T>&, drake::systems::State<T>* state) const override;
 
     private:
         void DoCalcTimeDerivatives(
-                const drake::systems::Context<double>& context,
-                drake::systems::ContinuousState<double>* derivatives) const override;
-        void copyStateOut(const drake::systems::Context<double> &context, drake::systems::BasicVector<double> *output) const;
+                const drake::systems::Context<T>& context,
+                drake::systems::ContinuousState<T>* derivatives) const override;
+        void copyStateOut(const drake::systems::Context<T> &context, drake::systems::BasicVector<T> *output) const;
         int state_port_idx;
         int torque_port_idx;
 };

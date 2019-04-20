@@ -57,8 +57,8 @@ std::unique_ptr<systems::AffineSystem<double>> MakeCartPoleLQRController(
     pole_pin.set_angular_rate(context.get(), target_angular_rate);
 
     Eigen::Matrix4d Q = Eigen::Matrix4d::Identity();
-    Q(0, 0) = 10;
-    Q(1, 1) = 10;
+    Q(0, 0) = 1;
+    Q(1, 1) = 100;
     Vector1d R = Vector1d::Constant(1);
 
     return systems::controllers::LinearQuadraticRegulator(
@@ -66,5 +66,3 @@ std::unique_ptr<systems::AffineSystem<double>> MakeCartPoleLQRController(
             Eigen::Matrix<double, 0, 0>::Zero() /* No cross state/control costs */,
             actuation_port_index);
 }
-
-
