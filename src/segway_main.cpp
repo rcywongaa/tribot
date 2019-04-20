@@ -19,6 +19,7 @@
 #include "drake/systems/framework/diagram_builder.h"
 #include "drake/systems/primitives/affine_system.h"
 #include "drake/common/eigen_types.h"
+#include <Eigen/Dense>
 
 #include "cart_pole_util.hpp"
 #include "mip_util.hpp"
@@ -80,7 +81,7 @@ int do_main() {
     Vector3<double> point_W(0, 0, -0.25);
 
     const CoulombFriction<double> surface_friction(
-            0.8 /* static friction */, 0.3 /* dynamic friction */);
+            0.99 /* static friction */, 0.99 /* dynamic friction */);
 
     // A half-space for the ground geometry.
     plant.RegisterCollisionGeometry(
@@ -103,16 +104,25 @@ int do_main() {
     // Sanity check on the availability of the optional source id before using it.
     DRAKE_DEMAND(plant.geometry_source_is_registered());
 
-    auto controller = builder.AddSystem(MakeCartPoleLQRController(getResDir() + "segway_cart_pole.sdf"));
-    controller->set_name("controller");
-    auto mip_to_cart_pole_state_converter = builder.AddSystem(std::make_unique<MIPToCartPoleStateConverter>());
-    mip_to_cart_pole_state_converter->set_name("mip_to_cart_pole_state_converter");
-    auto cart_pole_to_mip_torque_converter = builder.AddSystem(std::make_unique<CartPoleToMIPTorqueConverter>());
-    cart_pole_to_mip_torque_converter->set_name("cart_pole_to_mip_torque_converter");
-    builder.Connect(plant.get_continuous_state_output_port(), mip_to_cart_pole_state_converter->mip_state_input());
-    builder.Connect(mip_to_cart_pole_state_converter->cart_pole_state_output(), controller->get_input_port());
-    builder.Connect(controller->get_output_port(), cart_pole_to_mip_torque_converter->cart_pole_torque_input());
-    builder.Connect(cart_pole_to_mip_torque_converter->mip_torque_output(), plant.get_actuation_input_port());
+    /* Using cart_pole LQR */
+    //auto controller = builder.AddSystem(MakeCartPoleLQRController(getResDir() + "segway_cart_pole.sdf"));
+    //controller->set_name("controller");
+    //auto mip_to_cart_pole_state_converter = builder.AddSystem(std::make_unique<MIPToCartPoleStateConverter>());
+    //mip_to_cart_pole_state_converter->set_name("mip_to_cart_pole_state_converter");
+    //auto cart_pole_to_mip_torque_converter = builder.AddSystem(std::make_unique<CartPoleToMIPTorqueConverter>());
+    //cart_pole_to_mip_torque_converter->set_name("cart_pole_to_mip_torque_converter");
+    //builder.Connect(plant.get_continuous_state_output_port(), mip_to_cart_pole_state_converter->mip_state_input());
+    //builder.Connect(mip_to_cart_pole_state_converter->cart_pole_state_output(), controller->get_input_port());
+    //builder.Connect(controller->get_output_port(), cart_pole_to_mip_torque_converter->cart_pole_torque_input());
+    //builder.Connect(cart_pole_to_mip_torque_converter->mip_torque_output(), plant.get_actuation_input_port());
+    /**********/
+
+    /* Using MIP LQR */
+    auto controller = builder.AddSystem(MakeMIPLQRController());
+    controller->set_name("MIP_controller");
+    builder.Connect(plant.get_continuous_state_output_port(), controller->get_input_port_estimated_state());
+    builder.Connect(controller->get_output_port_control(), plant.get_actuation_input_port());
+    /**********/
 
     printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
     printf("plant num positions = %d\n", plant.num_positions());
@@ -127,13 +137,12 @@ int do_main() {
     systems::Context<double>& context =
         diagram->GetMutableSubsystemContext(plant, diagram_context.get());
 
-    //context.FixInputPort(plant.get_actuation_input_port().get_index(), Vector1d::Constant(50.0));
-
+    context.FixInputPort(controller->get_input_port_desired_state().get_index(), Eigen::Vector4d::Zero());
     // Get joints so that we can set initial conditions.
-    const RevoluteJoint<double>& wheel_pole_joint = plant.GetJointByName<RevoluteJoint>("wheel_pole_joint");
+    const RevoluteJoint<double>& theta = plant.GetJointByName<RevoluteJoint>("theta");
 
     // Set initial state.
-    wheel_pole_joint.set_angle(&context, 1.0);
+    theta.set_angle(&context, 0.2);
 
     systems::Simulator<double> simulator(*diagram, std::move(diagram_context));
 

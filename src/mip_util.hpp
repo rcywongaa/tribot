@@ -2,28 +2,22 @@
 
 #include <drake/systems/framework/leaf_system.h>
 #include <drake/systems/framework/basic_vector.h>
+#include <drake/systems/primitives/affine_system.h>
+#include "drake/systems/controllers/linear_quadratic_regulator.h"
+#include <drake/systems/controllers/pid_controller.h>
 
+std::unique_ptr<drake::systems::controllers::PidController<double>> MakeMIPLQRController();
 
-class MIPToCartPoleStateConverter : public drake::systems::LeafSystem<double>
+class MobileInvertedPendulumPlant : public drake::systems::LeafSystem<double>
 {
     public:
-        MIPToCartPoleStateConverter();
-        const drake::systems::InputPort<double>& mip_state_input() const;
-        const drake::systems::OutputPort<double>& cart_pole_state_output() const;
+        MobileInvertedPendulumPlant();
+        const drake::systems::InputPort<double>& get_state_output() const;
+        const drake::systems::OutputPort<double>& get_torque_input() const;
     private:
-        void convert(const drake::systems::Context<double>& context, drake::systems::BasicVector<double>* output) const;
-        int input_idx;
-        int output_idx;
-};
-
-class CartPoleToMIPTorqueConverter : public drake::systems::LeafSystem<double>
-{
-    public:
-        CartPoleToMIPTorqueConverter();
-        const drake::systems::InputPort<double>& cart_pole_torque_input() const;
-        const drake::systems::OutputPort<double>& mip_torque_output() const;
-    private:
-        void convert(const drake::systems::Context<double>& context, drake::systems::BasicVector<double>* output) const;
-        int input_idx;
-        int output_idx;
+        void DoCalcTimeDerivatives(
+                const systems::Context<T>& context,
+                systems::ContinuousState<T>* derivatives) const override;
+        int state_port_idx;
+        int torque_port_idx;
 };
