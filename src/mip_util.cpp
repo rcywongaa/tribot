@@ -5,21 +5,22 @@
 using namespace Eigen;
 using namespace drake;
 
-const double g = 9.8; // gravity
+const double g = 9.81; // gravity
 const double M_w = 10.0; // wheel mass
 const double M_r = 50.0; // rod mass
 const double R = 0.2; // wheel radius
-const double L = 1.0; // rod length
+const double L = 0.5; // half rod length
 const double I_w = 0.5*M_w*R*R; // wheel inertia
 const double I_r = M_r*L*L/3.0; // rod inertia
 
+// Taken from
+// http://renaissance.ucsd.edu/courses/mae143c/MIPdynamics.pdf
 // Wheel angular acceleration (phi_dd) linearized coefficients
 const double phi_dd_common_coeff = 1.0/(
         M_r*R*L -
         ((I_w + (M_w + M_r) * R*R) * (I_r + M_r*L*L)) / (M_r*R*L));
 const double phi_dd_theta_coeff = phi_dd_common_coeff * M_r*g*L;
-const double phi_dd_torque_coeff = phi_dd_common_coeff * ((I_r + M_r*L*L) / (M_r*R*L) - 1);
-
+const double phi_dd_torque_coeff = phi_dd_common_coeff * (-(I_r + M_r*L*L) / (M_r*R*L) - 1);
 // Rod angular acceleration (theta_dd) linearized coefficients
 const double theta_dd_phi_dd_coeff = -(I_w + (M_w + M_r)*R*R)/(M_r*R*L);
 const double theta_dd_torque_coeff = 1.0/(M_r*R*L) + theta_dd_phi_dd_coeff * phi_dd_torque_coeff;
@@ -33,9 +34,9 @@ std::unique_ptr<systems::AffineSystem<double>> MakeMIPLQRController()
     context->FixInputPort(plant.get_torque_input().get_index(), Vector1d::Constant(0.0));
     Q(0, 0) = 10;
     Q(1, 1) = 1;
-    Q(2, 2) = 10;
-    Q(3, 3) = 10;
-    Vector1d R = Vector1d::Constant(10);
+    Q(2, 2) = 2;
+    Q(3, 3) = 4;
+    Vector1d R = Vector1d::Constant(1);
 
     return systems::controllers::LinearQuadraticRegulator(plant, *context, Q, R);
 }
@@ -52,10 +53,10 @@ void MIPStateSimplifier<T>::convert(const drake::systems::Context<T>& context, s
 {
     const auto state = this->EvalVectorInput(context, input_idx)->get_value();
     auto mutable_output = output->get_mutable_value();
-    mutable_output[0] = -state[2]; // theta (pole angle)
-    mutable_output[1] = -state[2] + state[3]; // phi (wheel angle) = theta + pole_wheel_angle
-    mutable_output[2] = -state[6]; // theta_dot
-    mutable_output[3] = -state[6] + state[7]; // phi_dot
+    mutable_output[0] = state[2]; // theta (pole angle)
+    mutable_output[1] = state[2] + state[3]; // phi (wheel angle) = theta + pole_wheel_angle
+    mutable_output[2] = state[6]; // theta_dot
+    mutable_output[3] = state[6] + state[7]; // phi_dot
 }
 
 template <typename T>
