@@ -31,9 +31,11 @@ std::unique_ptr<systems::AffineSystem<double>> MakeMIPLQRController()
     auto context = plant.CreateDefaultContext();
     Eigen::Matrix4d Q = Eigen::Matrix4d::Identity();
     context->FixInputPort(plant.get_torque_input().get_index(), Vector1d::Constant(0.0));
-    Q(0, 0) = 1;
-    Q(1, 1) = 100;
-    Vector1d R = Vector1d::Constant(1);
+    Q(0, 0) = 10;
+    Q(1, 1) = 1;
+    Q(2, 2) = 10;
+    Q(3, 3) = 10;
+    Vector1d R = Vector1d::Constant(10);
 
     return systems::controllers::LinearQuadraticRegulator(plant, *context, Q, R);
 }
@@ -50,10 +52,10 @@ void MIPStateSimplifier<T>::convert(const drake::systems::Context<T>& context, s
 {
     const auto state = this->EvalVectorInput(context, input_idx)->get_value();
     auto mutable_output = output->get_mutable_value();
-    mutable_output[0] = state[2]; // theta (pole angle)
-    mutable_output[1] = state[2] + state[3]; // phi (wheel angle) = theta + pole_wheel_angle
-    mutable_output[2] = state[6]; // theta_dot
-    mutable_output[3] = state[6] + state[7]; // phi_dot
+    mutable_output[0] = -state[2]; // theta (pole angle)
+    mutable_output[1] = -state[2] + state[3]; // phi (wheel angle) = theta + pole_wheel_angle
+    mutable_output[2] = -state[6]; // theta_dot
+    mutable_output[3] = -state[6] + state[7]; // phi_dot
 }
 
 template <typename T>
