@@ -9,7 +9,7 @@
   # Wheel
   wheel_mass = 10.0
   wheel_radius = 0.2
-  wheel_thickness = 0.3
+  wheel_thickness = 0.2
 
   # Pole
   pole_mass = 50.0
@@ -33,7 +33,20 @@
         </inertia>
       </inertial>
 
-      <visual name='vis_wheel_joint'>
+      <visual name='vis_wheel'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>torus.obj</uri>
+            <scale><%= wheel_radius %> <%= wheel_radius %> <%= wheel_radius %></scale>
+          </mesh>
+          <!--<cylinder>-->
+            <!--<radius><%= wheel_radius %></radius>-->
+            <!--<length><%= wheel_thickness %></length>-->
+          <!--</cylinder>-->
+        </geometry>
+      </visual>
+      <visual name='vis_wheel2'>
         <pose>0 0 0 <%= PI/2.0 %> 0 0</pose>
         <geometry>
           <cylinder>
@@ -42,9 +55,12 @@
           </cylinder>
         </geometry>
       </visual>
-      <collision name='col_wheel_joint'>
+      <collision name='col_wheel'>
         <pose>0 0 0 <%= PI/2.0 %> 0 0</pose>
         <geometry>
+          <!--<mesh>-->
+            <!--<uri>torus.obj</uri>-->
+          <!--</mesh>-->
           <cylinder>
             <radius><%= wheel_radius %></radius>
             <length><%= wheel_thickness %></length>

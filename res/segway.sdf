@@ -9,28 +9,44 @@
       <inertial>
         <mass>10.0</mass>
         <inertia>
-          <ixx>0.175</ixx>
+          <ixx>0.13333333333333336</ixx>
           <iyy>0.20000000000000004</iyy>
-          <izz>0.175</izz>
+          <izz>0.13333333333333336</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
 
-      <visual name='vis_wheel_joint'>
+      <visual name='vis_wheel'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>torus.obj</uri>
+            <scale>0.2 0.2 0.2</scale>
+          </mesh>
+          <!--<cylinder>-->
+            <!--<radius>0.2</radius>-->
+            <!--<length>0.2</length>-->
+          <!--</cylinder>-->
+        </geometry>
+      </visual>
+      <visual name='vis_wheel2'>
         <pose>0 0 0 1.570795 0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.2</radius>
-            <length>0.3</length>
+            <length>0.2</length>
           </cylinder>
         </geometry>
       </visual>
-      <collision name='col_wheel_joint'>
+      <collision name='col_wheel'>
         <pose>0 0 0 1.570795 0 0</pose>
         <geometry>
+          <!--<mesh>-->
+            <!--<uri>torus.obj</uri>-->
+          <!--</mesh>-->
           <cylinder>
             <radius>0.2</radius>
-            <length>0.3</length>
+            <length>0.2</length>
           </cylinder>
         </geometry>
       </collision>
