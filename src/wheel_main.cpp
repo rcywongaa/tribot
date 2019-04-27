@@ -105,13 +105,13 @@ int do_main() {
     diagram->SetDefaultContext(diagram_context.get());
     systems::Context<double>& plant_context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
 
-    plant_context.FixInputPort(plant.get_actuation_input_port().get_index(), Vector1d(50.0));
+    plant_context.FixInputPort(plant.get_actuation_input_port().get_index(), Vector1d(20.0));
 
     // Get joints so that we can set initial conditions.
-    const RevoluteJoint<double>& wheel_joint = plant.GetJointByName<RevoluteJoint>("wheel_joint");
+    const RevoluteJoint<double>& theta = plant.GetJointByName<RevoluteJoint>("theta");
 
     // Set initial state.
-    wheel_joint.set_angle(&plant_context, 0.5);
+    theta.set_angle(&plant_context, 0.5);
 
     systems::Simulator<double> simulator(*diagram, std::move(diagram_context));
 

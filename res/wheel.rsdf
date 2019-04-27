@@ -6,30 +6,21 @@
   # Wheels
   wheel_mass = 10.0
   wheel_radius = 0.2
-  wheel_thickness = 0.3
+  wheel_thickness = 0.05
 
 %>
 <!-- THIS FILE IS GENERATED FROM wheel.rsdf -->
 
 <sdf version='1.6'>
   <model name='Wheel'>
-    <link name='axle_y'>
+    <link name='y_dummy'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <mass>0.1</mass>
       </inertial>
-
-      <visual name='slider_visual'>
-        <pose>0 0 0 0 0 0</pose>
-        <geometry>
-          <box>
-            <size>0.5 0.1 0.1</size>
-          </box>
-        </geometry>
-      </visual>
     </link>
 
-    <link name='axle_z'>
+    <link name='z_dummy'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <mass>0.1</mass>
@@ -68,10 +59,10 @@
       </collision>
     </link>
 
-    <joint name='axle_y_slider' type='prismatic'>
+    <joint name='y' type='prismatic'>
       <pose>0 0 0 0 0 0</pose>
       <parent>world</parent>
-      <child>axle_y</child>
+      <child>y_dummy</child>
       <axis>
         <xyz>0 1 0</xyz>
         <limit>
@@ -80,10 +71,10 @@
       </axis>
     </joint>
 
-    <joint name='axle_z_slider' type='prismatic'>
+    <joint name='z' type='prismatic'>
       <pose>0 0 0 0 0 0</pose>
-      <parent>axle_y</parent>
-      <child>axle_z</child>
+      <parent>y_dummy</parent>
+      <child>z_dummy</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -92,10 +83,11 @@
       </axis>
     </joint>
 
-    <joint name='wheel_joint' type='revolute'>
+    <!--roll of the wheel-->
+    <joint name='theta' type='revolute'>
       <!--With respect to child frame-->
       <pose>0 0 0 0 0 0</pose>
-      <parent>axle_z</parent>
+      <parent>z_dummy</parent>
       <child>wheel</child>
       <axis>
         <xyz>1.0 0 0</xyz>
