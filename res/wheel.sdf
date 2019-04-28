@@ -4,13 +4,31 @@
 
 <sdf version='1.6'>
   <model name='Wheel'>
+
+    <link name='tilt_dummy'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+      </inertial>
+    </link>
+    <link name='turn_dummy'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+      </inertial>
+    </link>
+    <link name='x_dummy'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+      </inertial>
+    </link>
     <link name='y_dummy'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <mass>0.1</mass>
       </inertial>
     </link>
-
     <link name='z_dummy'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
@@ -24,8 +42,8 @@
         <mass>10.0</mass>
         <inertia>
           <ixx>0.10208333333333335</ixx>
-          <iyy>0.10208333333333335</iyy>
-          <izz>0.20000000000000004</izz>
+          <iyy>0.20000000000000004</iyy>
+          <izz>0.10208333333333335</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
@@ -50,9 +68,21 @@
       </collision>
     </link>
 
-    <joint name='y' type='prismatic'>
+    <joint name='x' type='prismatic'>
       <pose>0 0 0 0 0 0</pose>
       <parent>world</parent>
+      <child>x_dummy</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='y' type='prismatic'>
+      <pose>0 0 0 0 0 0</pose>
+      <parent>x_dummy</parent>
       <child>y_dummy</child>
       <axis>
         <xyz>0 1 0</xyz>
@@ -74,15 +104,39 @@
       </axis>
     </joint>
 
-    <!--roll of the wheel-->
-    <joint name='theta' type='revolute'>
+    <joint name='turn' type='revolute'>
       <!--With respect to child frame-->
       <pose>0 0 0 0 0 0</pose>
       <parent>z_dummy</parent>
+      <child>turn_dummy</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='tilt' type='revolute'>
+      <!--With respect to child frame-->
+      <pose>0 0 0 0 0 0</pose>
+      <parent>turn_dummy</parent>
+      <child>tilt_dummy</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='roll' type='revolute'>
+      <!--With respect to child frame-->
+      <pose>0 0 0 0 0 0</pose>
+      <parent>tilt_dummy</parent>
       <child>wheel</child>
       <axis>
         <xyz>1.0 0 0</xyz>
-        <!--<use_parent_model_frame>true</use_parent_model_frame>-->
       </axis>
     </joint>
 
