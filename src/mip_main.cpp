@@ -21,13 +21,8 @@
 #include "drake/common/eigen_types.h"
 #include <Eigen/Dense>
 
-#include "cart_pole_util.hpp"
+#include "meta.hpp"
 #include "mip_util.hpp"
-
-inline const std::string getSrcDir()
-{
-    return std::string(__FILE__).erase(std::string(__FILE__).rfind('/')) + "/";
-}
 
 using namespace drake;
 
@@ -58,11 +53,6 @@ DEFINE_double(time_step, 0,
         "discrete updates and period equal to this time_step. "
         "If 0, the plant is modeled as a continuous system.");
 
-std::string getResDir()
-{
-    return getSrcDir() + "/../res/";
-}
-
 int do_main() {
     systems::DiagramBuilder<double> builder;
 
@@ -73,9 +63,9 @@ int do_main() {
     SceneGraph<double>& scene_graph = pair.scene_graph;
     scene_graph.set_name("scene_graph");
 
-    // Make and add the segway model.
-    const std::string segway_model_filename = getSrcDir() + "/../res/segway.sdf";
-    Parser(&plant, &scene_graph).AddModelFromFile(segway_model_filename);
+    // Make and add the mip model.
+    const std::string mip_model_filename = getResDir() + "mip.sdf";
+    Parser(&plant, &scene_graph).AddModelFromFile(mip_model_filename);
 
     Vector3<double> normal_W(0, 0, 1);
     Vector3<double> point_W(0, 0, -0.25);
@@ -145,7 +135,7 @@ int do_main() {
 
 int main(int argc, char* argv[]) {
     gflags::SetUsageMessage(
-            "A segway demo using Drake's MultibodyPlant,"
+            "A mip demo using Drake's MultibodyPlant,"
             "with SceneGraph visualization. "
             "Launch drake-visualizer before running this example.");
     gflags::ParseCommandLineFlags(&argc, &argv, true);

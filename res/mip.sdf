@@ -3,7 +3,7 @@
 <!-- THIS FILE IS GENERATED FROM segway.rsdf -->
 
 <sdf version='1.6'>
-  <model name='Segway'>
+  <model name='mip'>
     <link name='wheel'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
@@ -58,13 +58,13 @@
       <self_collide>0</self_collide>
       <pose>0 0 0.5 0 0 0</pose>
       <inertial>
-          <mass>50.0</mass>
-          <inertia>
-            <ixx>0</ixx>
-            <iyy>16.666666666666664</iyy>
-            <izz>16.666666666666664</izz>
-            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
-          </inertia>
+        <mass>50.0</mass>
+        <inertia>
+          <ixx>0</ixx>
+          <iyy>16.666666666666664</iyy>
+          <izz>16.666666666666664</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
       </inertial>
 
       <visual name='vis_cylinder'>
