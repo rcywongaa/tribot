@@ -14,7 +14,6 @@
 #include "drake/multibody/tree/prismatic_joint.h"
 #include "drake/multibody/tree/revolute_joint.h"
 #include "drake/multibody/tree/uniform_gravity_field_element.h"
-#include "drake/systems/analysis/simulator.h"
 #include "drake/systems/controllers/linear_quadratic_regulator.h"
 #include "drake/systems/framework/diagram_builder.h"
 #include "drake/systems/primitives/affine_system.h"
@@ -23,6 +22,7 @@
 
 #include "meta.hpp"
 #include "mip_util.hpp"
+#include "drake_util.hpp"
 
 using namespace drake;
 
@@ -89,14 +89,11 @@ int do_main() {
     // Now the model is complete.
     plant.Finalize();
 
+    plant.set_penetration_allowance(0.001);
+
     printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
     printf("plant num positions = %d\n", plant.num_positions());
     printf("plant num velocities = %d\n", plant.num_velocities());
-
-    plant.set_penetration_allowance(0.001);
-
-    // Sanity check on the availability of the optional source id before using it.
-    DRAKE_DEMAND(plant.geometry_source_is_registered());
 
     // Create MIP LQR and connect simulated MIP to LQR
     auto controller = builder.AddSystem(MakeMIPLQRController());
@@ -111,24 +108,15 @@ int do_main() {
     auto diagram = builder.Build();
 
     // Create a context for this system:
-    std::unique_ptr<systems::Context<double>> diagram_context =
-        diagram->CreateDefaultContext();
+    std::unique_ptr<systems::Context<double>> diagram_context = diagram->CreateDefaultContext();
     diagram->SetDefaultContext(diagram_context.get());
-    systems::Context<double>& context =
-        diagram->GetMutableSubsystemContext(plant, diagram_context.get());
+    systems::Context<double>& context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
 
     // Get joints so that we can set initial conditions.
     const RevoluteJoint<double>& theta = plant.GetJointByName<RevoluteJoint>("theta");
-
-    // Set initial state.
     theta.set_angle(&context, 0.2);
 
-    systems::Simulator<double> simulator(*diagram, std::move(diagram_context));
-
-    simulator.set_publish_every_time_step(false);
-    simulator.set_target_realtime_rate(FLAGS_target_realtime_rate);
-    simulator.Initialize();
-    simulator.StepTo(FLAGS_simulation_time);
+    start_simulation(*diagram, std::move(diagram_context), FLAGS_target_realtime_rate);
 
     return 0;
 }
