@@ -108,20 +108,7 @@ int do_main() {
     // Sanity check on the availability of the optional source id before using it.
     DRAKE_DEMAND(plant.geometry_source_is_registered());
 
-    /* Using cart_pole LQR */
-    //auto controller = builder.AddSystem(MakeCartPoleLQRController(getResDir() + "segway_cart_pole.sdf"));
-    //controller->set_name("controller");
-    //auto mip_to_cart_pole_state_converter = builder.AddSystem(std::make_unique<MIPToCartPoleStateConverter>());
-    //mip_to_cart_pole_state_converter->set_name("mip_to_cart_pole_state_converter");
-    //auto cart_pole_to_mip_torque_converter = builder.AddSystem(std::make_unique<CartPoleToMIPTorqueConverter>());
-    //cart_pole_to_mip_torque_converter->set_name("cart_pole_to_mip_torque_converter");
-    //builder.Connect(plant.get_continuous_state_output_port(), mip_to_cart_pole_state_converter->mip_state_input());
-    //builder.Connect(mip_to_cart_pole_state_converter->cart_pole_state_output(), controller->get_input_port());
-    //builder.Connect(controller->get_output_port(), cart_pole_to_mip_torque_converter->cart_pole_torque_input());
-    //builder.Connect(cart_pole_to_mip_torque_converter->mip_torque_output(), plant.get_actuation_input_port());
-    /**********/
-
-    /* Using MIP LQR */
+    // Create MIP LQR and connect simulated MIP to LQR
     auto controller = builder.AddSystem(MakeMIPLQRController());
     controller->set_name("MIP_controller");
     auto simplifier = builder.AddSystem(std::make_unique<MIPStateSimplifier<double>>());
@@ -129,7 +116,6 @@ int do_main() {
     builder.Connect(plant.get_continuous_state_output_port(), simplifier->get_full_state_input());
     builder.Connect(simplifier->get_simplified_state_output(), controller->get_input_port());
     builder.Connect(controller->get_output_port(), plant.get_actuation_input_port());
-    /**********/
 
     geometry::ConnectDrakeVisualizer(&builder, scene_graph);
     auto diagram = builder.Build();
