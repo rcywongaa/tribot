@@ -1,0 +1,90 @@
+<?xml version='1.0' ?>
+<%
+  # erb generation
+  # https://bitbucket.org/osrf/gazebo_models/src/b237ea45262f51ff8d72aaa96ef19f1288723c42/cart_rigid_suspension/model.rsdf?at=default&fileviewer=file-view-default
+
+  # Constants
+  PI = 3.14159
+
+  link1_mass = 1.0
+  link1_length = 1
+  link1_radius = 0.1
+
+  link2_mass = 1.0
+  link2_length = 0.5
+  link2_radius = 0.05
+
+  load_mass = 10
+%>
+<!-- THIS FILE IS GENERATED FROM acrobot.rsdf -->
+
+<sdf version='1.6'>
+  <model name='Acrobot'>
+
+    <link name='link1'>
+      <pose>0 0 <%= link1_length/2.0%> 0 0 0</pose>
+      <inertial>
+        <mass><%= link1_mass %></mass>
+        <inertia>
+          <ixx><%= 1.0/3.0*link1_mass*link1_length**2 %></ixx>
+          <iyy><%= 1.0/3.0*link1_mass*link1_length**2 %></iyy>
+          <izz>0</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name='link1_vis'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius><%= link1_radius %></radius>
+            <length><%= link1_length %></length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name='link2'>
+      <pose>0 0 <%= link1_length + link2_length/2.0 %> 0 0 0</pose>
+      <inertial>
+        <mass><%= link2_mass %></mass>
+        <inertia>
+          <ixx><%= 1.0/3.0*link2_mass*link2_length**2 %></ixx>
+          <iyy><%= 1.0/3.0*link2_mass*link2_length**2 %></iyy>
+          <izz>0</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name='link2_vis'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius><%= link2_radius %></radius>
+            <length><%= link2_length %></length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint name='theta' type='revolute'>
+      <parent>world</parent>
+      <child>link1</child>
+      <pose>0 0 <%= -link1_length/2.0 %> 0 0 0</pose>
+      <axis>
+        <xyz>0 1.0 0</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+        
+    <joint name='phi' type='revolute'>
+      <parent>link1</parent>
+      <child>link2</child>
+      <pose>0 0 <%= -link2_length/2.0 %> 0 0 0</pose>
+      <axis>
+        <xyz>0 1.0 0</xyz>
+      </axis>
+    </joint>
+
+  </model>
+</sdf>

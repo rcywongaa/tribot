@@ -1,0 +1,74 @@
+<?xml version='1.0' ?>
+
+<!-- THIS FILE IS GENERATED FROM acrobot.rsdf -->
+
+<sdf version='1.6'>
+  <model name='Acrobot'>
+
+    <link name='link1'>
+      <pose>0 0 0.5 0 0 0</pose>
+      <inertial>
+        <mass>1.0</mass>
+        <inertia>
+          <ixx>0.3333333333333333</ixx>
+          <iyy>0.3333333333333333</iyy>
+          <izz>0</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name='link1_vis'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.1</radius>
+            <length>1</length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name='link2'>
+      <pose>0 0 1.25 0 0 0</pose>
+      <inertial>
+        <mass>1.0</mass>
+        <inertia>
+          <ixx>0.08333333333333333</ixx>
+          <iyy>0.08333333333333333</iyy>
+          <izz>0</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name='link2_vis'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.05</radius>
+            <length>0.5</length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint name='theta' type='revolute'>
+      <parent>world</parent>
+      <child>link1</child>
+      <pose>0 0 -0.5 0 0 0</pose>
+      <axis>
+        <xyz>0 1.0 0</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+        
+    <joint name='phi' type='revolute'>
+      <parent>link1</parent>
+      <child>link2</child>
+      <pose>0 0 -0.25 0 0 0</pose>
+      <axis>
+        <xyz>0 1.0 0</xyz>
+      </axis>
+    </joint>
+
+  </model>
+</sdf>

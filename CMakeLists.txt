@@ -16,8 +16,15 @@ target_link_libraries(tribot
   drake::drake drake::drake-common-text-logging-gflags gflags_shared
 )
 
+add_executable(acrobot
+    src/acrobot_main.cpp
+    src/drake_util.cpp
+)
+target_link_libraries(acrobot
+  drake::drake drake::drake-common-text-logging-gflags gflags_shared
+)
+
 add_executable(mip
-    src/cart_pole_util.cpp
     src/mip_util.cpp
     src/mip_main.cpp
     src/drake_util.cpp)
