@@ -3,20 +3,13 @@
 
 #include <gflags/gflags.h>
 
-#include "drake/common/drake_assert.h"
-#include "drake/common/find_resource.h"
 #include "drake/common/text_logging_gflags.h"
-#include "drake/geometry/scene_graph.h"
-#include "drake/lcm/drake_lcm.h"
 #include "drake/multibody/plant/multibody_plant.h"
 #include "drake/multibody/tree/prismatic_joint.h"
 #include "drake/multibody/tree/revolute_joint.h"
-#include "drake/multibody/tree/uniform_gravity_field_element.h"
 #include "drake/systems/controllers/linear_quadratic_regulator.h"
 #include "drake/systems/framework/diagram_builder.h"
 #include "drake/systems/primitives/affine_system.h"
-#include "drake/common/eigen_types.h"
-#include <Eigen/Dense>
 
 #include "meta.hpp"
 #include "mip_util.hpp"
@@ -28,11 +21,6 @@ using namespace drake;
 using drake::multibody::MultibodyPlant;
 using drake::multibody::PrismaticJoint;
 using drake::multibody::RevoluteJoint;
-using drake::multibody::UniformGravityFieldElement;
-using drake::geometry::HalfSpace;
-using drake::multibody::CoulombFriction;
-using Eigen::Vector3d;
-using Eigen::Vector2d;
 using drake::systems::Context;
 
 DEFINE_double(target_realtime_rate, 1.0,
@@ -42,31 +30,7 @@ DEFINE_double(target_realtime_rate, 1.0,
 int do_main() {
     systems::DiagramBuilder<double> builder;
 
-    MultibodyPlant<double>& plant = create_default_plant(getResDir() + "mip.sdf", builder);
-
-    Vector3<double> normal_W(0, 0, 1);
-    Vector3<double> point_W(0, 0, -0.25);
-
-    const CoulombFriction<double> surface_friction(
-            0.99 /* static friction */, 0.99 /* dynamic friction */);
-
-    // A half-space for the ground geometry.
-    plant.RegisterCollisionGeometry(
-            plant.world_body(), HalfSpace::MakePose(normal_W, point_W),
-            HalfSpace(), "collision", surface_friction);
-
-    // Add visual for the ground.
-    plant.RegisterVisualGeometry(
-            plant.world_body(), HalfSpace::MakePose(normal_W, point_W),
-            HalfSpace(), "visual");
-
-    // Add gravity to the model.
-    plant.AddForceElement<UniformGravityFieldElement>();
-
-    // Now the model is complete.
-    plant.Finalize();
-
-    plant.set_penetration_allowance(0.001);
+    MultibodyPlant<double>& plant = create_default_plant(getResDir() + "mip.sdf", builder, -0.25);
 
     printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
     printf("plant num positions = %d\n", plant.num_positions());

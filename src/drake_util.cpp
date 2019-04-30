@@ -3,10 +3,13 @@
 #include "drake/systems/analysis/simulator.h"
 #include "drake/geometry/geometry_visualization.h"
 #include "drake/multibody/parsing/parser.h"
+#include "drake/multibody/tree/uniform_gravity_field_element.h"
+#include "drake/common/eigen_types.h"
+#include <Eigen/Dense>
 
 using namespace drake;
 
-drake::multibody::MultibodyPlant<double>& create_default_plant(std::string model_filename, drake::systems::DiagramBuilder<double>& builder)
+drake::multibody::MultibodyPlant<double>& create_default_plant(std::string model_filename, drake::systems::DiagramBuilder<double>& builder, double ground_offset)
 {
 
     // If greater than zero, the plant is modeled as a system with
@@ -22,6 +25,31 @@ drake::multibody::MultibodyPlant<double>& create_default_plant(std::string model
 
     // Connect scene graph to visualizer
     drake::geometry::ConnectDrakeVisualizer(&builder, scene_graph);
+
+    Eigen::Vector3d normal_W(0, 0, 1);
+    Eigen::Vector3d point_W(0, 0, ground_offset);
+
+    const drake::multibody::CoulombFriction<double> surface_friction(
+            0.99 /* static friction */, 0.99 /* dynamic friction */);
+
+    // A half-space for the ground geometry.
+    plant.RegisterCollisionGeometry(
+            plant.world_body(), drake::geometry::HalfSpace::MakePose(normal_W, point_W),
+            drake::geometry::HalfSpace(), "collision", surface_friction);
+
+    // Add visual for the ground.
+    plant.RegisterVisualGeometry(
+            plant.world_body(), drake::geometry::HalfSpace::MakePose(normal_W, point_W),
+            drake::geometry::HalfSpace(), "visual");
+
+    // Add gravity to the model.
+    plant.AddForceElement<drake::multibody::UniformGravityFieldElement>();
+
+    // Now the model is complete.
+    plant.Finalize();
+
+    plant.set_penetration_allowance(0.001);
+
     return plant;
 }
 
