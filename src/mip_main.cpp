@@ -49,7 +49,6 @@ int do_main() {
 
     // Create a context for this system:
     std::unique_ptr<systems::Context<double>> diagram_context = diagram->CreateDefaultContext();
-    diagram->SetDefaultContext(diagram_context.get());
     systems::Context<double>& context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
 
     // Get joints so that we can set initial conditions.
