@@ -32,10 +32,21 @@ std::unique_ptr<systems::AffineSystem<double>> MakeMIPLQRController()
     auto context = plant.CreateDefaultContext();
     Eigen::Matrix4d Q = Eigen::Matrix4d::Identity();
     context->FixInputPort(plant.get_torque_input().get_index(), Vector1d::Constant(0.0));
-    Q(0, 0) = 10;
-    Q(1, 1) = 1;
-    Q(2, 2) = 2;
-    Q(3, 3) = 4;
+    drake::systems::VectorBase<double>& context_state = context->get_mutable_continuous_state_vector();
+    context_state[0] = 0.0; // theta
+
+    // phi (wheel angle)
+    // Use this to control translation of MIP
+    // Setting this too large will cause the linearization to fail due to overaggressive movement
+    context_state[1] = 20.0;
+
+    context_state[2] = 0.0; // theta_dot
+    context_state[3] = 0.0; // phi_dot
+
+    Q(0, 0) = 10; // theta
+    Q(1, 1) = 10; // phi
+    Q(2, 2) = 1; // theta_dot
+    Q(3, 3) = 1; // phi_dot
     Vector1d R = Vector1d::Constant(1);
 
     return systems::controllers::LinearQuadraticRegulator(plant, *context, Q, R);
