@@ -6,13 +6,15 @@
   # Constants
   PI = 3.14159
 
+  # Must be consistent with mip_util.cpp
+
   # Wheel
-  wheel_mass = 10.0
+  wheel_mass = 2.0
   wheel_radius = 0.2
   wheel_thickness = 0.2
 
   # Pole
-  pole_mass = 50.0
+  pole_mass = 8.0
   pole_length = 1.0
   pole_radius = 0.1
 
@@ -77,9 +79,9 @@
       <inertial>
         <mass><%= pole_mass %></mass>
         <inertia>
-          <ixx>0</ixx>
+          <ixx><%= 1.0/3.0*pole_mass*pole_length**2 %></ixx>
           <iyy><%= 1.0/3.0*pole_mass*pole_length**2 %></iyy>
-          <izz><%= 1.0/3.0*pole_mass*pole_length**2 %></izz>
+          <izz>0</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>

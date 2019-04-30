@@ -5,9 +5,10 @@
 using namespace Eigen;
 using namespace drake;
 
+// Must be consistent with mip.rsdf
 const double g = 9.81; // gravity
-const double M_w = 10.0; // wheel mass
-const double M_r = 50.0; // rod mass
+const double M_w = 2.0; // wheel mass
+const double M_r = 8.0; // rod mass
 const double R = 0.2; // wheel radius
 const double L = 0.5; // half rod length
 const double I_w = 0.5*M_w*R*R; // wheel inertia
@@ -37,7 +38,6 @@ std::unique_ptr<systems::AffineSystem<double>> MakeMIPLQRController()
 
     // phi (wheel angle)
     // Use this to control translation of MIP
-    // Setting this too large will cause the linearization to fail due to overaggressive movement
     context_state[1] = 20.0;
 
     context_state[2] = 0.0; // theta_dot
@@ -47,7 +47,9 @@ std::unique_ptr<systems::AffineSystem<double>> MakeMIPLQRController()
     Q(1, 1) = 10; // phi
     Q(2, 2) = 1; // theta_dot
     Q(3, 3) = 1; // phi_dot
-    Vector1d R = Vector1d::Constant(1);
+
+    // Setting this too small will cause the linearization to fail due to overaggressive movement
+    Vector1d R = Vector1d::Constant(100.0);
 
     return systems::controllers::LinearQuadraticRegulator(plant, *context, Q, R);
 }

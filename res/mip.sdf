@@ -7,11 +7,11 @@
     <link name='wheel'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
-        <mass>10.0</mass>
+        <mass>2.0</mass>
         <inertia>
-          <ixx>0.13333333333333336</ixx>
-          <iyy>0.20000000000000004</iyy>
-          <izz>0.13333333333333336</izz>
+          <ixx>0.026666666666666672</ixx>
+          <iyy>0.04000000000000001</iyy>
+          <izz>0.026666666666666672</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
@@ -58,11 +58,11 @@
       <self_collide>0</self_collide>
       <pose>0 0 0.5 0 0 0</pose>
       <inertial>
-        <mass>50.0</mass>
+        <mass>8.0</mass>
         <inertia>
-          <ixx>0</ixx>
-          <iyy>16.666666666666664</iyy>
-          <izz>16.666666666666664</izz>
+          <ixx>2.6666666666666665</ixx>
+          <iyy>2.6666666666666665</iyy>
+          <izz>0</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
