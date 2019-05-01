@@ -11,8 +11,10 @@ include_directories(include)
 
 #find_package (Threads REQUIRED)
 
-add_executable(tribot src/main.cpp)
-target_link_libraries(tribot
+add_executable(unibot
+    src/drake_util.cpp
+    src/unibot_main.cpp)
+target_link_libraries(unibot
   drake::drake drake::drake-common-text-logging-gflags gflags_shared
 )
 

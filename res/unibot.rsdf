@@ -1,0 +1,264 @@
+<?xml version='1.0' ?>
+<%
+  # erb generation
+  # https://bitbucket.org/osrf/gazebo_models/src/b237ea45262f51ff8d72aaa96ef19f1288723c42/cart_rigid_suspension/model.rsdf?at=default&fileviewer=file-view-default
+
+  # Constants
+  PI = 3.14159
+
+  # Wheel
+  wheel_mass = 2.0
+  wheel_radius = 0.2
+  wheel_thickness = 0.02
+
+  link1_mass = 1.0
+  link1_length = 1
+  link1_radius = 0.04
+
+  link2_mass = 1.0
+  link2_length = 0.75
+  link2_radius = 0.02
+
+  load_mass = 5.0
+  load_radius = 0.05
+%>
+<!-- THIS FILE IS GENERATED FROM segway.rsdf -->
+
+<sdf version='1.6'>
+  <model name='Unibot'>
+    <link name='wheel'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass><%= wheel_mass %></mass>
+        <inertia>
+          <ixx><%= 1.0/12.0*wheel_mass*(3.0*wheel_radius**2 + wheel_thickness**2) %></ixx>
+          <iyy><%= 1.0/2.0 * wheel_mass * wheel_radius**2 %></iyy>
+          <izz><%= 1.0/12.0*wheel_mass*(3.0*wheel_radius**2 + wheel_thickness**2) %></izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name='vis_wheel'>
+        <pose>0 0 0 <%= PI/2.0 %> 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius><%= wheel_radius %></radius>
+            <length><%= wheel_thickness %></length>
+          </cylinder>
+        </geometry>
+      </visual>
+      <collision name='col_wheel'>
+        <pose>0 0 0 <%= PI/2.0 %> 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius><%= wheel_radius %></radius>
+            <length><%= wheel_thickness %></length>
+          </cylinder>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name='link1'>
+      <pose>0 0 <%= link1_length/2.0%> 0 0 0</pose>
+      <inertial>
+        <mass><%= link1_mass %></mass>
+        <inertia>
+          <ixx><%= 1.0/3.0*link1_mass*link1_length**2 %></ixx>
+          <iyy><%= 1.0/3.0*link1_mass*link1_length**2 %></iyy>
+          <izz>1e-6</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name='link1_vis'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius><%= link1_radius %></radius>
+            <length><%= link1_length %></length>
+          </cylinder>
+        </geometry>
+      </visual>
+      <collision name='link1_col'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius><%= link1_radius %></radius>
+            <length><%= link1_length %></length>
+          </cylinder>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name='link2'>
+      <pose>0 0 <%= link1_length - link2_length/2.0 %> 0 0 0</pose>
+      <inertial>
+        <mass><%= link2_mass %></mass>
+        <inertia>
+          <ixx><%= 1.0/3.0*link2_mass*link2_length**2 %></ixx>
+          <iyy><%= 1.0/3.0*link2_mass*link2_length**2 %></iyy>
+          <izz>1e-6</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name='link2_vis'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius><%= link2_radius %></radius>
+            <length><%= link2_length %></length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name='load'>
+      <pose>0 0 <%= link1_length - link2_length %> 0 0 0</pose>
+      <inertial>
+        <mass><%= load_mass %></mass>
+      </inertial>
+      <visual name='load_vis'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <sphere>
+            <radius><%= load_radius %></radius>
+          </sphere>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name='x_dummy'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>1e-6</mass>
+      </inertial>
+    </link>
+
+    <link name='y_dummy'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>1e-6</mass>
+      </inertial>
+    </link>
+
+    <link name='z_dummy'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>1e-6</mass>
+      </inertial>
+    </link>
+
+    <link name='roll_dummy'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>1e-6</mass>
+      </inertial>
+    </link>
+
+    <link name='yaw_dummy'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>1e-6</mass>
+      </inertial>
+    </link>
+
+    <joint name='z' type='prismatic'>
+      <parent>world</parent>
+      <child>z_dummy</child>
+      <pose>0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1.0</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='y' type='prismatic'>
+      <parent>z_dummy</parent>
+      <child>y_dummy</child>
+      <pose>0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1.0</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='x' type='prismatic'>
+      <parent>y_dummy</parent>
+      <child>x_dummy</child>
+      <pose>0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>1.0 0 0</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='yaw' type='revolute'>
+      <parent>x_dummy</parent>
+      <child>yaw_dummy</child>
+      <pose>0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='roll' type='revolute'>
+      <parent>yaw_dummy</parent>
+      <child>roll_dummy</child>
+      <pose>0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='theta' type='revolute'>
+      <parent>roll_dummy</parent>
+      <child>link1</child>
+      <pose>0 0 <%= -link1_length/2.0 %> 0 0 0</pose>
+      <axis>
+        <xyz>0 1.0 0</xyz>
+        <limit>
+          <effort>0.0</effort>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='phi' type='revolute'>
+      <parent>link1</parent>
+      <child>link2</child>
+      <pose>0 0 <%= link2_length/2.0 %> 0 0 0</pose>
+      <axis>
+        <xyz>1.0 0 0</xyz>
+      </axis>
+    </joint>
+
+    <joint name='load_attach' type='fixed'>
+      <parent>link2</parent>
+      <child>load</child>
+      <pose>0 0 0 0 0 0</pose>
+    </joint>
+
+    <joint name='wheel_joint' type='revolute'>
+      <!--With respect to child frame-->
+      <pose>0 0 0 0 0 0</pose>
+      <parent>link1</parent>
+      <child>wheel</child>
+      <axis>
+        <xyz>0 1.0 0</xyz>
+        <!--<use_parent_model_frame>true</use_parent_model_frame>-->
+      </axis>
+    </joint>
+
+  </model>
+</sdf>
+
