@@ -7,19 +7,19 @@
   PI = 3.14159
 
   # Wheel
-  wheel_mass = 2.0
+  wheel_mass = 0.2
   wheel_radius = 0.2
   wheel_thickness = 0.02
 
-  link1_mass = 1.0
+  link1_mass = 0.1
   link1_length = 1
   link1_radius = 0.04
 
-  link2_mass = 1.0
-  link2_length = 0.75
+  link2_mass = 0.08
+  link2_length = 0.8
   link2_radius = 0.02
 
-  load_mass = 5.0
+  load_mass = 0.5
   load_radius = 0.05
 %>
 <!-- THIS FILE IS GENERATED FROM segway.rsdf -->
