@@ -78,14 +78,13 @@ void MIPController<T>::getOutputTorque(const drake::systems::Context<T>& context
 {
     const auto x = this->EvalVectorInput(context, input_idx)->get_value();
     auto mutable_output = output->get_mutable_value();
-    const Vector4<T> x0(0, 0, 0, 0);
+    const Vector4<T> x0(0, 10, 0, 0);
     const Vector1<T> u_v = K * (x0 - x);
-    //mutable_output[0] = u_v[0];
     mutable_output[0] = math::saturate(u_v[0], T(-1.0), T(1.0));
-    printf("theta = %f\n", x[0]);
-    const T cost = (x - x0).dot(S * (x - x0));
-    printf("cost = %f\n", cost);
-    printf("output_torque = %f\n", mutable_output[0]);
+    //printf("theta = %f\n", x[0]);
+    //const T cost = (x - x0).dot(S * (x - x0));
+    //printf("cost = %f\n", cost);
+    //printf("output_torque = %f\n", mutable_output[0]);
 }
 
 DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
