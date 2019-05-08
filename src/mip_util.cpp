@@ -10,7 +10,8 @@ const double g = 9.81; // gravity
 const double M_w = 2.0; // wheel mass
 const double M_r = 8.0; // rod mass
 const double R = 0.2; // wheel radius
-const double L = 0.5; // half rod length
+const double L = 1.0; // rod length
+const double l = L/2.0; // half rod length
 const double I_w = 0.5*M_w*R*R; // wheel inertia
 const double I_r = M_r*L*L/3.0; // rod inertia
 
@@ -18,13 +19,13 @@ const double I_r = M_r*L*L/3.0; // rod inertia
 // http://renaissance.ucsd.edu/courses/mae143c/MIPdynamics.pdf
 // Wheel angular acceleration (phi_dd) linearized coefficients
 const double phi_dd_common_coeff = 1.0/(
-        M_r*R*L -
-        ((I_w + (M_w + M_r) * R*R) * (I_r + M_r*L*L)) / (M_r*R*L));
-const double phi_dd_theta_coeff = phi_dd_common_coeff * M_r*g*L;
-const double phi_dd_torque_coeff = phi_dd_common_coeff * (-(I_r + M_r*L*L) / (M_r*R*L) - 1);
+        M_r*R*l -
+        ((I_w + (M_w + M_r) * R*R) * (I_r + M_r*l*l)) / (M_r*R*l));
+const double phi_dd_theta_coeff = phi_dd_common_coeff * M_r*g*l;
+const double phi_dd_torque_coeff = phi_dd_common_coeff * (-(I_r + M_r*l*l) / (M_r*R*l) - 1);
 // Rod angular acceleration (theta_dd) linearized coefficients
-const double theta_dd_phi_dd_coeff = -(I_w + (M_w + M_r)*R*R)/(M_r*R*L);
-const double theta_dd_torque_coeff = 1.0/(M_r*R*L) + theta_dd_phi_dd_coeff * phi_dd_torque_coeff;
+const double theta_dd_phi_dd_coeff = -(I_w + (M_w + M_r)*R*R)/(M_r*R*l);
+const double theta_dd_torque_coeff = 1.0/(M_r*R*l) + theta_dd_phi_dd_coeff * phi_dd_torque_coeff;
 const double theta_dd_theta_coeff = theta_dd_phi_dd_coeff * phi_dd_theta_coeff;
 
 std::unique_ptr<systems::AffineSystem<double>> MakeMIPLQRController()
