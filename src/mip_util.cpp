@@ -1,14 +1,15 @@
 #include "mip_util.hpp"
 
 #include <Eigen/Dense>
+#include "drake/math/saturate.h"
 
 using namespace Eigen;
 using namespace drake;
 
 // Must be consistent with mip.rsdf
 const double g = 9.81; // gravity
-const double M_w = 2.0; // wheel mass
-const double M_r = 8.0; // rod mass
+const double M_w = 0.2; // wheel mass
+const double M_r = 0.5; // rod mass
 const double R = 0.2; // wheel radius
 const double L = 1.0; // rod length
 const double l = L/2.0; // half rod length
@@ -28,38 +29,73 @@ const double theta_dd_phi_dd_coeff = -(I_w + (M_w + M_r)*R*R)/(M_r*R*l);
 const double theta_dd_torque_coeff = 1.0/(M_r*R*l) + theta_dd_phi_dd_coeff * phi_dd_torque_coeff;
 const double theta_dd_theta_coeff = theta_dd_phi_dd_coeff * phi_dd_theta_coeff;
 
-std::unique_ptr<systems::AffineSystem<double>> MakeMIPLQRController()
+const Eigen::Matrix4d A((Eigen::Matrix4d() <<
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+            theta_dd_theta_coeff, 0, 0, 0,
+            phi_dd_theta_coeff, 0, 0, 0).finished());
+const Eigen::Vector4d B((Eigen::Vector4d() <<
+            0,
+            0,
+            theta_dd_torque_coeff,
+            phi_dd_torque_coeff).finished());
+
+template <typename T>
+MIPController<T>::MIPController() :
+    systems::LeafSystem<T>(systems::SystemTypeTag<MIPController>{}),
+    input_idx(this->DeclareVectorInputPort("MIP_state", systems::BasicVector<T>(4)).get_index()),
+    output_idx(this->DeclareVectorOutputPort("torque", systems::BasicVector<T>(1), &MIPController::getOutputTorque).get_index())
 {
-    MobileInvertedPendulumPlant<double> plant;
-    auto context = plant.CreateDefaultContext();
+
     Eigen::Matrix4d Q = Eigen::Matrix4d::Identity();
-    context->FixInputPort(plant.get_torque_input().get_index(), Vector1d::Constant(0.0));
-    drake::systems::VectorBase<double>& context_state = context->get_mutable_continuous_state_vector();
-    context_state[0] = 0.0; // theta
-
-    // phi (wheel angle)
-    // Use this to control translation of MIP
-    context_state[1] = 20.0;
-
-    context_state[2] = 0.0; // theta_dot
-    context_state[3] = 0.0; // phi_dot
-
     Q(0, 0) = 10; // theta
-    Q(1, 1) = 10; // phi
+    Q(1, 1) = 1; // phi
     Q(2, 2) = 1; // theta_dot
     Q(3, 3) = 1; // phi_dot
 
     // Setting this too small will cause the linearization to fail due to overaggressive movement
-    Vector1d R = Vector1d::Constant(100.0);
+    Vector1d R = Vector1d::Constant(1.0);
 
-    return systems::controllers::LinearQuadraticRegulator(plant, *context, Q, R);
+    systems::controllers::LinearQuadraticRegulatorResult lqr_result = systems::controllers::LinearQuadraticRegulator(A, B, Q, R);
+    S = lqr_result.S;
+    K = lqr_result.K;
 }
+
+template <typename T>
+const drake::systems::OutputPort<T>& MIPController<T>::torque_output() const
+{
+    return drake::systems::System<T>::get_output_port(output_idx);
+}
+
+template <typename T>
+const drake::systems::InputPort<T>& MIPController<T>::mip_state_input() const
+{
+    return drake::systems::System<T>::get_input_port(input_idx);
+}
+
+template <typename T>
+void MIPController<T>::getOutputTorque(const drake::systems::Context<T>& context, drake::systems::BasicVector<T>* output) const
+{
+    const auto x = this->EvalVectorInput(context, input_idx)->get_value();
+    auto mutable_output = output->get_mutable_value();
+    const Vector4<T> x0(0, 0, 0, 0);
+    const Vector1<T> u_v = K * (x0 - x);
+    //mutable_output[0] = u_v[0];
+    mutable_output[0] = math::saturate(u_v[0], T(-1.0), T(1.0));
+    printf("theta = %f\n", x[0]);
+    const T cost = (x - x0).dot(S * (x - x0));
+    printf("cost = %f\n", cost);
+    printf("output_torque = %f\n", mutable_output[0]);
+}
+
+DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
+    class MIPController)
 
 template <typename T>
 MIPStateSimplifier<T>::MIPStateSimplifier() :
     systems::LeafSystem<T>(systems::SystemTypeTag<MIPStateSimplifier>{}),
-    input_idx(this->DeclareVectorInputPort("MIP_state", systems::BasicVector<T>(8)).get_index()),
-    output_idx(this->DeclareVectorOutputPort("cartpole_state", systems::BasicVector<T>(4), &MIPStateSimplifier::convert).get_index())
+    input_idx(this->DeclareVectorInputPort("full_state", systems::BasicVector<T>(8)).get_index()),
+    output_idx(this->DeclareVectorOutputPort("simplified_state", systems::BasicVector<T>(4), &MIPStateSimplifier::convert).get_index())
 {}
 
 template <typename T>
@@ -116,18 +152,6 @@ void MobileInvertedPendulumPlant<T>::DoCalcTimeDerivatives(
 {
     Vector4<T> x = context.get_continuous_state_vector().CopyToVector();
     const Vector1<T> u = this->EvalVectorInput(context, torque_port_idx)->get_value();
-    Matrix4<T> A;
-    A <<
-        0, 0, 1, 0,
-        0, 0, 0, 1,
-        theta_dd_theta_coeff, 0, 0, 0,
-        phi_dd_theta_coeff, 0, 0, 0;
-    Vector4<T> B;
-    B <<
-        0,
-        0,
-        theta_dd_torque_coeff,
-        phi_dd_torque_coeff;
     Vector4<T> x_d = A*x + B*u;
     derivatives->SetFromVector(x_d);
 }
@@ -151,4 +175,3 @@ void MobileInvertedPendulumPlant<T>::copyStateOut(const systems::Context<T> &con
 
 DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
     class MobileInvertedPendulumPlant)
-

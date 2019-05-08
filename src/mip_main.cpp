@@ -37,13 +37,13 @@ int do_main() {
     printf("plant num velocities = %d\n", plant.num_velocities());
 
     // Create MIP LQR and connect simulated MIP to LQR
-    auto controller = builder.AddSystem(MakeMIPLQRController());
+    auto controller = builder.AddSystem(std::make_unique<MIPController<double>>());
     controller->set_name("MIP_controller");
     auto simplifier = builder.AddSystem(std::make_unique<MIPStateSimplifier<double>>());
     simplifier->set_name("MIP_simplifier");
     builder.Connect(plant.get_continuous_state_output_port(), simplifier->get_full_state_input());
-    builder.Connect(simplifier->get_simplified_state_output(), controller->get_input_port());
-    builder.Connect(controller->get_output_port(), plant.get_actuation_input_port());
+    builder.Connect(simplifier->get_simplified_state_output(), controller->mip_state_input());
+    builder.Connect(controller->torque_output(), plant.get_actuation_input_port());
 
     auto diagram = builder.Build();
 
