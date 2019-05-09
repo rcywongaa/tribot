@@ -20,6 +20,7 @@ target_link_libraries(unibot
 
 add_executable(acrobot
     src/acrobot_main.cpp
+    src/acrobot_util.cpp
     src/drake_util.cpp
 )
 target_link_libraries(acrobot
