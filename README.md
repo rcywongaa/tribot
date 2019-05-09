@@ -1,6 +1,11 @@
 # Prerequisite
 
-[`drake_cmake_installed` examples](https://github.com/RobotLocomotion/drake-external-examples/tree/master/drake_cmake_installed)
+## Setup Drake
+1. Download drake binary from <https://drake.mit.edu/from_binary.html>
+1. Untar and move to `/opt/` directory
+
+## Testing
+Ensure [`drake_cmake_installed` examples](https://github.com/RobotLocomotion/drake-external-examples/tree/master/drake_cmake_installed)
 can be built and run
 
 ```
