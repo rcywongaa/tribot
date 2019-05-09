@@ -80,8 +80,8 @@ void MIPController<T>::getOutputTorque(const drake::systems::Context<T>& context
     auto mutable_output = output->get_mutable_value();
     const Vector4<T> x0(0, 10, 0, 0);
     const Vector1<T> u_v = K * (x0 - x);
-    mutable_output[0] = math::saturate(u_v[0], T(-1.0), T(1.0));
-    //printf("theta = %f\n", x[0]);
+    mutable_output[0] = math::saturate(u_v(0), T(-1.0), T(1.0));
+    //printf("theta = %f\n", x(0));
     //const T cost = (x - x0).dot(S * (x - x0));
     //printf("cost = %f\n", cost);
     //printf("output_torque = %f\n", mutable_output[0]);
@@ -102,10 +102,10 @@ void MIPStateSimplifier<T>::convert(const drake::systems::Context<T>& context, s
 {
     const auto state = this->EvalVectorInput(context, input_idx)->get_value();
     auto mutable_output = output->get_mutable_value();
-    mutable_output[0] = state[2]; // theta (pole angle)
-    mutable_output[1] = state[2] + state[3]; // phi (wheel angle) = theta + pole_wheel_angle
-    mutable_output[2] = state[6]; // theta_dot
-    mutable_output[3] = state[6] + state[7]; // phi_dot
+    mutable_output[0] = state(2); // theta (pole angle)
+    mutable_output[1] = state(2) + state(3); // phi (wheel angle) = theta + pole_wheel_angle
+    mutable_output[2] = state(6); // theta_dot
+    mutable_output[3] = state(6) + state(7); // phi_dot
 }
 
 template <typename T>

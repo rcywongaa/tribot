@@ -7,6 +7,8 @@
 
 #include "meta.hpp"
 #include "drake_util.hpp"
+#include "unibot_util.hpp"
+#include "acrobot_util.hpp"
 
 using namespace Eigen;
 using namespace drake;
@@ -30,14 +32,17 @@ int main(int argc, char* argv[])
 
     MultibodyPlant<double>& plant = create_default_plant(getResDir() + "unibot.sdf", builder, -0.20);
 
-    printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
+    printf("plant.get_state_output_port().size() = %d\n", plant.get_state_output_port().size());
     printf("plant num positions = %d\n", plant.num_positions());
     printf("plant num velocities = %d\n", plant.num_velocities());
 
-    //auto controller = builder.AddSystem(MakeAcrobotLQRController());
-    //controller->set_name("acrobot_controller");
-    //builder.Connect(plant.get_continuous_state_output_port(),
-            //controller->get_input_port());
+    auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<UnibotToAcrobotStateConverter<double>>());
+    unibot_acrobot_converter->set_name("unibot_acrobot_converter");
+    builder.Connect(plant.get_state_output_port(), unibot_acrobot_converter->get_unibot_state_input());
+    auto acrobot_controller = builder.AddSystem(MakeAcrobotLQRController());
+    acrobot_controller->set_name("acrobot_controller");
+    builder.Connect(unibot_acrobot_converter->get_acrobot_state_output(), acrobot_controller->get_input_port());
+
     //builder.Connect(controller->get_output_port(),
             //plant.get_actuation_input_port());
 
