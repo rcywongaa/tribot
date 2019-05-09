@@ -26,7 +26,6 @@ drake::multibody::MultibodyPlant<double>& create_default_plant(std::string model
     // Connect scene graph to visualizer
     drake::geometry::ConnectDrakeVisualizer(&builder, scene_graph);
 
-    Eigen::Vector3d normal_W(0, 0, 1);
     Eigen::Vector3d point_W(0, 0, ground_offset);
 
     const drake::multibody::CoulombFriction<double> surface_friction(
@@ -34,12 +33,14 @@ drake::multibody::MultibodyPlant<double>& create_default_plant(std::string model
 
     // A half-space for the ground geometry.
     plant.RegisterCollisionGeometry(
-            plant.world_body(), drake::geometry::HalfSpace::MakePose(normal_W, point_W),
-            drake::geometry::HalfSpace(), "collision", surface_friction);
-
+            plant.world_body(),
+            math::RigidTransformd(point_W),
+            geometry::HalfSpace(),
+            "GroundCollisionGeometry",
+            surface_friction);
     // Add visual for the ground.
     plant.RegisterVisualGeometry(
-            plant.world_body(), drake::geometry::HalfSpace::MakePose(normal_W, point_W),
+            plant.world_body(), math::RigidTransformd(point_W),
             drake::geometry::HalfSpace(), "visual");
 
     // Add gravity to the model.

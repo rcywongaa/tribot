@@ -32,13 +32,13 @@ int main(int argc, char* argv[])
 
     MultibodyPlant<double>& plant = create_default_plant(getResDir() + "acrobot.sdf", builder, -100.0);
 
-    printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
+    printf("plant.get_state_output_port().size() = %d\n", plant.get_state_output_port().size());
     printf("plant num positions = %d\n", plant.num_positions());
     printf("plant num velocities = %d\n", plant.num_velocities());
 
     auto controller = builder.AddSystem(MakeAcrobotLQRController());
     controller->set_name("acrobot_controller");
-    builder.Connect(plant.get_continuous_state_output_port(),
+    builder.Connect(plant.get_state_output_port(),
             controller->get_input_port());
     builder.Connect(controller->get_output_port(),
             plant.get_actuation_input_port());

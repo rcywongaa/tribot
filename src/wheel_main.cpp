@@ -79,12 +79,12 @@ int do_main() {
 
     // A half-space for the ground geometry.
     plant.RegisterCollisionGeometry(
-            plant.world_body(), HalfSpace::MakePose(normal_W, point_W),
+            plant.world_body(), math::RigidTransformd(point_W),
             HalfSpace(), "collision", surface_friction);
 
     // Add visual for the ground.
     plant.RegisterVisualGeometry(
-            plant.world_body(), HalfSpace::MakePose(normal_W, point_W),
+            plant.world_body(), math::RigidTransformd(point_W),
             HalfSpace(), "visual");
 
     // Add gravity to the model.

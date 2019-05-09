@@ -66,14 +66,14 @@ int do_main() {
     // Now the model is complete.
     plant.Finalize();
 
-    printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
+    printf("plant.get_state_output_port().size() = %d\n", plant.get_state_output_port().size());
 
     // Sanity check on the availability of the optional source id before using it.
     DRAKE_DEMAND(plant.geometry_source_is_registered());
 
     auto controller = builder.AddSystem(MakeCartPoleLQRController(model_filename));
     controller->set_name("controller");
-    builder.Connect(plant.get_continuous_state_output_port(),
+    builder.Connect(plant.get_state_output_port(),
             controller->get_input_port());
     builder.Connect(controller->get_output_port(),
             plant.get_actuation_input_port());

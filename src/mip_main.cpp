@@ -32,7 +32,7 @@ int do_main() {
 
     MultibodyPlant<double>& plant = create_default_plant(getResDir() + "mip.sdf", builder, -0.25);
 
-    printf("plant.get_continuous_state_output_port().size() = %d\n", plant.get_continuous_state_output_port().size());
+    printf("plant.get_state_output_port().size() = %d\n", plant.get_state_output_port().size());
     printf("plant num positions = %d\n", plant.num_positions());
     printf("plant num velocities = %d\n", plant.num_velocities());
 
@@ -41,7 +41,7 @@ int do_main() {
     controller->set_name("MIP_controller");
     auto simplifier = builder.AddSystem(std::make_unique<MIPStateSimplifier<double>>());
     simplifier->set_name("MIP_simplifier");
-    builder.Connect(plant.get_continuous_state_output_port(), simplifier->get_full_state_input());
+    builder.Connect(plant.get_state_output_port(), simplifier->get_full_state_input());
     builder.Connect(simplifier->get_simplified_state_output(), controller->mip_state_input());
     builder.Connect(controller->torque_output(), plant.get_actuation_input_port());
 
