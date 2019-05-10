@@ -102,10 +102,10 @@ void MIPStateSimplifier<T>::convert(const drake::systems::Context<T>& context, s
 {
     const auto state = this->EvalVectorInput(context, input_idx)->get_value();
     auto mutable_output = output->get_mutable_value();
-    mutable_output[0] = state(2); // theta (pole angle)
-    mutable_output[1] = state(2) + state(3); // phi (wheel angle) = theta + pole_wheel_angle
-    mutable_output[2] = state(6); // theta_dot
-    mutable_output[3] = state(6) + state(7); // phi_dot
+    mutable_output[0] = state[2]; // theta (pole angle)
+    mutable_output[1] = state[2] + state[3]; // phi (wheel angle) = theta + pole_wheel_angle
+    mutable_output[2] = state[6]; // theta_dot
+    mutable_output[3] = state[6] + state[7]; // phi_dot
 }
 
 template <typename T>
