@@ -21,7 +21,7 @@ DEFINE_double(target_realtime_rate, 1.0,
         "Simulator::set_target_realtime_rate() for details.");
 
 template <typename T>
-void unibot_to_acrobot_state(Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
+void unibot_to_acrobot_state(const Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
 {
     output[0] = state[4]; // roll of the rod
     output[1] = state[6]; // phi (angle between link1 and link2)
@@ -47,9 +47,9 @@ int main(int argc, char* argv[])
     printf("plant num velocities = %d\n", plant.num_velocities());
 
     ConversionFunc func;
-    func.double_impl = std::function(unibot_to_acrobot_state<double>);
-    func.autodiff_impl = std::function(unibot_to_acrobot_state<drake::AutoDiffXd>);
-    func.symbolic_impl = std::function(unibot_to_acrobot_state<drake::symbolic::Expression>);
+    func.double_impl = unibot_to_acrobot_state<double>;
+    func.autodiff_impl = unibot_to_acrobot_state<drake::AutoDiffXd>;
+    func.symbolic_impl = unibot_to_acrobot_state<drake::symbolic::Expression>;
 
     auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(func, 8, 4));
     unibot_acrobot_converter->set_name("unibot_acrobot_converter");
