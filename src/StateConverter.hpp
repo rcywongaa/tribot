@@ -8,6 +8,13 @@
 
 struct ConversionFunc
 {
+    template <typename T>
+    ConversionFunc(T func)
+    {
+        double_impl = func<double>;
+        autodiff_impl = func<drake::AutoDiffXd>;
+        symbolic_impl = func<drake::symbolic::Expression>;
+    }
     std::function<void(const Eigen::VectorBlock<const drake::VectorX<double>>&, Eigen::VectorBlock<drake::VectorX<double>>& )> double_impl;
     std::function<void(const Eigen::VectorBlock<const drake::VectorX<drake::AutoDiffXd>>&, Eigen::VectorBlock<drake::VectorX<drake::AutoDiffXd>>& )> autodiff_impl;
     std::function<void(const Eigen::VectorBlock<const drake::VectorX<drake::symbolic::Expression>>&, Eigen::VectorBlock<drake::VectorX<drake::symbolic::Expression>>& )> symbolic_impl;
