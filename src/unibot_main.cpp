@@ -46,10 +46,10 @@ int main(int argc, char* argv[])
     printf("plant num positions = %d\n", plant.num_positions());
     printf("plant num velocities = %d\n", plant.num_velocities());
 
-    ConversionFunc func(unibot_to_acrobot_state);
-    //func.double_impl = unibot_to_acrobot_state<double>;
-    //func.autodiff_impl = unibot_to_acrobot_state<drake::AutoDiffXd>;
-    //func.symbolic_impl = unibot_to_acrobot_state<drake::symbolic::Expression>;
+    ConversionFunc func(
+            unibot_to_acrobot_state<double>,
+            unibot_to_acrobot_state<drake::AutoDiffXd>,
+            unibot_to_acrobot_state<drake::symbolic::Expression>);
 
     auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(func, 8, 4));
     unibot_acrobot_converter->set_name("unibot_acrobot_converter");

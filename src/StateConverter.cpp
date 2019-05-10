@@ -6,10 +6,9 @@ template <typename T>
 StateConverter<T>::StateConverter(ConversionFunc func, const unsigned int input_size, const unsigned int output_size) :
     systems::LeafSystem<T>(systems::SystemTypeTag<StateConverter>{}),
     input_idx(this->DeclareVectorInputPort("input_port", systems::BasicVector<T>(input_size)).get_index()),
-    output_idx(this->DeclareVectorOutputPort("output_port", systems::BasicVector<T>(output_size), &StateConverter::convert).get_index())
-{
-    convert_func = func;
-}
+    output_idx(this->DeclareVectorOutputPort("output_port", systems::BasicVector<T>(output_size), &StateConverter::convert).get_index()),
+    convert_func(func)
+{}
 
 template <>
 void StateConverter<double>::convert(const drake::systems::Context<double>& context, systems::BasicVector<double>* output) const
