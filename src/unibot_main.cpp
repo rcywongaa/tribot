@@ -9,6 +9,7 @@
 #include "drake_util.hpp"
 #include "unibot_util.hpp"
 #include "acrobot_util.hpp"
+#include "StateConverter.hpp"
 
 using namespace Eigen;
 using namespace drake;
@@ -18,6 +19,14 @@ using namespace drake::multibody;
 DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
         "Simulator::set_target_realtime_rate() for details.");
+
+void unibot_to_acrobot_state(Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
+{
+    output[0] = state[4]; // roll of the rod
+    output[1] = state[6]; // phi (angle between link1 and link2)
+    output[2] = state[12]; // roll_dot
+    output[3] = state[14]; // phi_dot
+}
 
 int main(int argc, char* argv[])
 {
@@ -36,7 +45,7 @@ int main(int argc, char* argv[])
     printf("plant num positions = %d\n", plant.num_positions());
     printf("plant num velocities = %d\n", plant.num_velocities());
 
-    auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<UnibotToAcrobotStateConverter<double>>());
+    auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_acrobot_state));
     unibot_acrobot_converter->set_name("unibot_acrobot_converter");
     builder.Connect(plant.get_state_output_port(), unibot_acrobot_converter->get_unibot_state_input());
     auto acrobot_controller = builder.AddSystem(MakeAcrobotLQRController());
