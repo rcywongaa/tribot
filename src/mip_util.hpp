@@ -28,24 +28,6 @@ class MIPController : public drake::systems::LeafSystem<T>
 };
 
 template <typename T>
-class MIPStateSimplifier : public drake::systems::LeafSystem<T>
-{
-    public:
-        DRAKE_NO_COPY_NO_MOVE_NO_ASSIGN(MIPStateSimplifier);
-
-        template <typename U>
-        explicit MIPStateSimplifier(const MIPStateSimplifier<U>& other) : MIPStateSimplifier<T>() {}
-
-        MIPStateSimplifier();
-        const drake::systems::InputPort<T>& get_full_state_input() const;
-        const drake::systems::OutputPort<T>& get_simplified_state_output() const;
-    private:
-        void convert(const drake::systems::Context<T>& context, drake::systems::BasicVector<T>* output) const;
-        int input_idx;
-        int output_idx;
-};
-
-template <typename T>
 class MobileInvertedPendulumPlant : public drake::systems::LeafSystem<T>
 {
     public:
