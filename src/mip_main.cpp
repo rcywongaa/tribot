@@ -14,6 +14,7 @@
 #include "meta.hpp"
 #include "mip_util.hpp"
 #include "drake_util.hpp"
+#include "StateConverter.hpp"
 
 using namespace drake;
 
@@ -27,6 +28,15 @@ DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
         "Simulator::set_target_realtime_rate() for details.");
 
+template <typename T>
+void to_mip_state(const Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
+{
+    output[0] = state[2]; // theta (pole angle)
+    output[1] = state[2] + state[3]; // phi (wheel angle) = theta + pole_wheel_angle
+    output[2] = state[6]; // theta_dot
+    output[3] = state[6] + state[7]; // phi_dot
+}
+
 int do_main() {
     systems::DiagramBuilder<double> builder;
 
@@ -39,10 +49,16 @@ int do_main() {
     // Create MIP LQR and connect simulated MIP to LQR
     auto controller = builder.AddSystem(std::make_unique<MIPController<double>>());
     controller->set_name("MIP_controller");
-    auto simplifier = builder.AddSystem(std::make_unique<MIPStateSimplifier<double>>());
-    simplifier->set_name("MIP_simplifier");
-    builder.Connect(plant.get_state_output_port(), simplifier->get_full_state_input());
-    builder.Connect(simplifier->get_simplified_state_output(), controller->mip_state_input());
+
+    ConversionFunc func(
+            to_mip_state<double>,
+            to_mip_state<drake::AutoDiffXd>,
+            to_mip_state<drake::symbolic::Expression>);
+
+    auto converter = builder.AddSystem(std::make_unique<StateConverter<double>>(func, 8, 4));
+    converter->set_name("MIP_converter");
+    builder.Connect(plant.get_state_output_port(), converter->get_input_port());
+    builder.Connect(converter->get_output_port(), controller->mip_state_input());
     builder.Connect(controller->torque_output(), plant.get_actuation_input_port());
 
     auto diagram = builder.Build();

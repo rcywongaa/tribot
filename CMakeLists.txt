@@ -32,6 +32,7 @@ target_link_libraries(acrobot
 
 add_executable(mip
     src/mip_util.cpp
+    src/StateConverter.cpp
     src/mip_main.cpp
     src/drake_util.cpp)
 target_link_libraries(mip
