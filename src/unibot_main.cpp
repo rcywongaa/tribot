@@ -9,6 +9,7 @@
 #include "drake_util.hpp"
 #include "unibot_util.hpp"
 #include "acrobot_util.hpp"
+#include "StateConverter.hpp"
 
 using namespace Eigen;
 using namespace drake;
@@ -18,6 +19,15 @@ using namespace drake::multibody;
 DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
         "Simulator::set_target_realtime_rate() for details.");
+
+template <typename T>
+void unibot_to_acrobot_state(const Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
+{
+    output[0] = state[4]; // roll of the rod
+    output[1] = state[6]; // phi (angle between link1 and link2)
+    output[2] = state[12]; // roll_dot
+    output[3] = state[14]; // phi_dot
+}
 
 int main(int argc, char* argv[])
 {
@@ -36,12 +46,17 @@ int main(int argc, char* argv[])
     printf("plant num positions = %d\n", plant.num_positions());
     printf("plant num velocities = %d\n", plant.num_velocities());
 
-    auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<UnibotToAcrobotStateConverter<double>>());
+    ConversionFunc func(
+            unibot_to_acrobot_state<double>,
+            unibot_to_acrobot_state<drake::AutoDiffXd>,
+            unibot_to_acrobot_state<drake::symbolic::Expression>);
+
+    auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(func, 8, 4));
     unibot_acrobot_converter->set_name("unibot_acrobot_converter");
-    builder.Connect(plant.get_state_output_port(), unibot_acrobot_converter->get_unibot_state_input());
+    builder.Connect(plant.get_state_output_port(), unibot_acrobot_converter->get_input_port());
     auto acrobot_controller = builder.AddSystem(MakeAcrobotLQRController());
     acrobot_controller->set_name("acrobot_controller");
-    builder.Connect(unibot_acrobot_converter->get_acrobot_state_output(), acrobot_controller->get_input_port());
+    builder.Connect(unibot_acrobot_converter->get_output_port(), acrobot_controller->get_input_port());
 
     //builder.Connect(controller->get_output_port(),
             //plant.get_actuation_input_port());

@@ -15,6 +15,7 @@ add_executable(unibot
     src/drake_util.cpp
     src/unibot_util.cpp
     src/acrobot_util.cpp
+    src/StateConverter.cpp
     src/unibot_main.cpp)
 target_link_libraries(unibot
   drake::drake drake::drake-common-text-logging-gflags gflags_shared
@@ -31,6 +32,7 @@ target_link_libraries(acrobot
 
 add_executable(mip
     src/mip_util.cpp
+    src/StateConverter.cpp
     src/mip_main.cpp
     src/drake_util.cpp)
 target_link_libraries(mip

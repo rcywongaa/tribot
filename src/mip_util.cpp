@@ -91,39 +91,6 @@ DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
     class MIPController)
 
 template <typename T>
-MIPStateSimplifier<T>::MIPStateSimplifier() :
-    systems::LeafSystem<T>(systems::SystemTypeTag<MIPStateSimplifier>{}),
-    input_idx(this->DeclareVectorInputPort("full_state", systems::BasicVector<T>(8)).get_index()),
-    output_idx(this->DeclareVectorOutputPort("simplified_state", systems::BasicVector<T>(4), &MIPStateSimplifier::convert).get_index())
-{}
-
-template <typename T>
-void MIPStateSimplifier<T>::convert(const drake::systems::Context<T>& context, systems::BasicVector<T>* output) const
-{
-    const auto state = this->EvalVectorInput(context, input_idx)->get_value();
-    auto mutable_output = output->get_mutable_value();
-    mutable_output[0] = state(2); // theta (pole angle)
-    mutable_output[1] = state(2) + state(3); // phi (wheel angle) = theta + pole_wheel_angle
-    mutable_output[2] = state(6); // theta_dot
-    mutable_output[3] = state(6) + state(7); // phi_dot
-}
-
-template <typename T>
-const drake::systems::InputPort<T>& MIPStateSimplifier<T>::get_full_state_input() const
-{
-    return drake::systems::System<T>::get_input_port(input_idx);
-}
-
-template <typename T>
-const drake::systems::OutputPort<T>& MIPStateSimplifier<T>::get_simplified_state_output() const
-{
-    return drake::systems::System<T>::get_output_port(output_idx);
-}
-
-DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
-    class MIPStateSimplifier)
-
-template <typename T>
 MobileInvertedPendulumPlant<T>::MobileInvertedPendulumPlant() :
     systems::LeafSystem<T>(systems::SystemTypeTag<MobileInvertedPendulumPlant>{}),
     state_port_idx(this->DeclareVectorOutputPort("state_output", systems::BasicVector<T>(4), &MobileInvertedPendulumPlant::copyStateOut).get_index()),
