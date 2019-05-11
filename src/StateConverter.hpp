@@ -8,7 +8,6 @@
 
 template <typename T>
 using ConversionFuncImpl = std::function<void(const Eigen::VectorBlock<const drake::VectorX<T>>&, Eigen::VectorBlock<drake::VectorX<T>>&)>;
-
 using ConversionFuncImpl_double = ConversionFuncImpl<double>;
 using ConversionFuncImpl_autodiff = ConversionFuncImpl<drake::AutoDiffXd>;
 using ConversionFuncImpl_symbolic = ConversionFuncImpl<drake::symbolic::Expression>;
@@ -40,18 +39,18 @@ class StateConverter : public drake::systems::LeafSystem<T>
         template <typename U>
         explicit StateConverter(const StateConverter<U>& other) : StateConverter<T>(other.getConvertFunc(), other.getInputSize(), other.getOutputSize()) {};
 
-        StateConverter(ConversionFunc func, const unsigned int input_size, const unsigned int output_size);
+        StateConverter(const ConversionFunc& func, const unsigned int input_size, const unsigned int output_size);
         const drake::systems::InputPort<T>& get_input_port() const;
         const drake::systems::OutputPort<T>& get_output_port() const;
 
-        const ConversionFunc getConvertFunc() const;
+        const ConversionFunc& getConvertFunc() const;
         const unsigned int getInputSize() const;
         const unsigned int getOutputSize() const;
     private:
         void convert(const drake::systems::Context<T>& context, drake::systems::BasicVector<T>* output) const;
         int input_idx;
         int output_idx;
-        ConversionFunc convert_func;
+        const ConversionFunc& convert_func;
         unsigned int input_size;
         unsigned int output_size;
 };

@@ -3,8 +3,10 @@
 using namespace drake;
 
 template <typename T>
-StateConverter<T>::StateConverter(ConversionFunc func, const unsigned int input_size, const unsigned int output_size) :
+StateConverter<T>::StateConverter(const ConversionFunc& func, const unsigned int input_size, const unsigned int output_size) :
     systems::LeafSystem<T>(systems::SystemTypeTag<StateConverter>{}),
+    input_size(input_size),
+    output_size(output_size),
     input_idx(this->DeclareVectorInputPort("input_port", systems::BasicVector<T>(input_size)).get_index()),
     output_idx(this->DeclareVectorOutputPort("output_port", systems::BasicVector<T>(output_size), &StateConverter::convert).get_index()),
     convert_func(func)
@@ -47,7 +49,7 @@ const drake::systems::OutputPort<T>& StateConverter<T>::get_output_port() const
 }
 
 template <typename T>
-const ConversionFunc StateConverter<T>::getConvertFunc() const
+const ConversionFunc& StateConverter<T>::getConvertFunc() const
 {
     return convert_func;
 }
