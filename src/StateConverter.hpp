@@ -6,23 +6,27 @@
 #include <drake/systems/framework/basic_vector.h>
 #include <Eigen/Dense>
 
-using ConversionFunc_double = std::function<void(const Eigen::VectorBlock<const drake::VectorX<double>>&, Eigen::VectorBlock<drake::VectorX<double>>&)>;
-using ConversionFunc_autodiff = std::function<void(const Eigen::VectorBlock<const drake::VectorX<drake::AutoDiffXd>>&, Eigen::VectorBlock<drake::VectorX<drake::AutoDiffXd>>&)>;
-using ConversionFunc_symbolic = std::function<void(const Eigen::VectorBlock<const drake::VectorX<drake::symbolic::Expression>>&, Eigen::VectorBlock<drake::VectorX<drake::symbolic::Expression>>&)>;
+template <typename T>
+using ConversionFuncImpl = std::function<void(const Eigen::VectorBlock<const drake::VectorX<T>>&, Eigen::VectorBlock<drake::VectorX<T>>&)>;
+
+using ConversionFuncImpl_double = ConversionFuncImpl<double>;
+using ConversionFuncImpl_autodiff = ConversionFuncImpl<drake::AutoDiffXd>;
+using ConversionFuncImpl_symbolic = ConversionFuncImpl<drake::symbolic::Expression>;
+
 struct ConversionFunc
 {
     ConversionFunc(
-            ConversionFunc_double double_impl,
-            ConversionFunc_autodiff autodiff_impl,
-            ConversionFunc_symbolic symbolic_impl)
+            ConversionFuncImpl_double double_impl,
+            ConversionFuncImpl_autodiff autodiff_impl,
+            ConversionFuncImpl_symbolic symbolic_impl)
     {
         this->double_impl = double_impl;
         this->autodiff_impl = autodiff_impl;
         this->symbolic_impl = symbolic_impl;
     }
-    ConversionFunc_double double_impl;
-    ConversionFunc_autodiff autodiff_impl;
-    ConversionFunc_symbolic symbolic_impl;
+    ConversionFuncImpl_double double_impl;
+    ConversionFuncImpl_autodiff autodiff_impl;
+    ConversionFuncImpl_symbolic symbolic_impl;
 };
 
 template <typename T>
