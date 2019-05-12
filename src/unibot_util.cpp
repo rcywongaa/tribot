@@ -13,12 +13,11 @@ TorqueCombiner<T>::TorqueCombiner() :
 template <typename T>
 void TorqueCombiner<T>::convert(const drake::systems::Context<T>& context, systems::BasicVector<T>* output) const
 {
-    //const auto mip_torque = this->EvalVectorInput(context, input_mip_idx)->get_value();
+    const auto mip_torque = this->EvalVectorInput(context, input_mip_idx)->get_value();
     const auto acrobot_torque = this->EvalVectorInput(context, input_acrobot_idx)->get_value();
     auto mutable_output = output->get_mutable_value();
     mutable_output[0] = acrobot_torque[0];
-    //mutable_output[1] = mip_torque[0];
-    mutable_output[1] = 0.0;
+    mutable_output[1] = mip_torque[0];
 }
 
 template <typename T>
