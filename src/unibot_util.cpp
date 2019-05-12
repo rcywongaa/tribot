@@ -3,34 +3,41 @@
 using namespace drake;
 
 template <typename T>
-UnibotToAcrobotStateConverter<T>::UnibotToAcrobotStateConverter() :
-    systems::LeafSystem<T>(systems::SystemTypeTag<UnibotToAcrobotStateConverter>{}),
-    input_idx(this->DeclareVectorInputPort("unibot_state", systems::BasicVector<T>(8)).get_index()),
-    output_idx(this->DeclareVectorOutputPort("acrobot_state", systems::BasicVector<T>(4), &UnibotToAcrobotStateConverter::convert).get_index())
+TorqueCombiner<T>::TorqueCombiner() :
+    systems::LeafSystem<T>(systems::SystemTypeTag<TorqueCombiner>{}),
+    input_acrobot_idx(this->DeclareVectorInputPort("acrobot_torque", systems::BasicVector<T>(1)).get_index()),
+    input_mip_idx(this->DeclareVectorInputPort("mip_torque", systems::BasicVector<T>(1)).get_index()),
+    output_idx(this->DeclareVectorOutputPort("torques", systems::BasicVector<T>(2), &TorqueCombiner::convert).get_index())
 {}
 
 template <typename T>
-void UnibotToAcrobotStateConverter<T>::convert(const drake::systems::Context<T>& context, systems::BasicVector<T>* output) const
+void TorqueCombiner<T>::convert(const drake::systems::Context<T>& context, systems::BasicVector<T>* output) const
 {
-    const auto state = this->EvalVectorInput(context, input_idx)->get_value();
+    //const auto mip_torque = this->EvalVectorInput(context, input_mip_idx)->get_value();
+    const auto acrobot_torque = this->EvalVectorInput(context, input_acrobot_idx)->get_value();
     auto mutable_output = output->get_mutable_value();
-    mutable_output[0] = state[4]; // roll of the rod
-    mutable_output[1] = state[6]; // phi (angle between link1 and link2)
-    mutable_output[2] = state[12]; // roll_dot
-    mutable_output[3] = state[14]; // phi_dot
+    mutable_output[0] = acrobot_torque[0];
+    //mutable_output[1] = mip_torque[0];
+    mutable_output[1] = 0.0;
 }
 
 template <typename T>
-const drake::systems::InputPort<T>& UnibotToAcrobotStateConverter<T>::get_unibot_state_input() const
+const drake::systems::InputPort<T>& TorqueCombiner<T>::get_acrobot_input_port() const
 {
-    return drake::systems::System<T>::get_input_port(input_idx);
+    return drake::systems::System<T>::get_input_port(input_acrobot_idx);
 }
 
 template <typename T>
-const drake::systems::OutputPort<T>& UnibotToAcrobotStateConverter<T>::get_acrobot_state_output() const
+const drake::systems::InputPort<T>& TorqueCombiner<T>::get_mip_input_port() const
+{
+    return drake::systems::System<T>::get_input_port(input_mip_idx);
+}
+
+template <typename T>
+const drake::systems::OutputPort<T>& TorqueCombiner<T>::get_torque_output_port() const
 {
     return drake::systems::System<T>::get_output_port(output_idx);
 }
 
 DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
-    class UnibotToAcrobotStateConverter)
+    class TorqueCombiner)
