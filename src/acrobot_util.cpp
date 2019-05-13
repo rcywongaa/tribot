@@ -18,7 +18,7 @@ using namespace drake::multibody;
 
 // This helper method makes an LQR controller to balance an acrobot model
 // specified in the SDF file `file_name`.
-std::unique_ptr<systems::AffineSystem<double>> MakeAcrobotLQRController()
+std::unique_ptr<systems::AffineSystem<double>> MakeAcrobotLQRController(std::string filename)
 {
     // LinearQuadraticRegulator() below requires the controller's model of the
     // plant to only have a single input port corresponding to the actuation.
@@ -27,7 +27,7 @@ std::unique_ptr<systems::AffineSystem<double>> MakeAcrobotLQRController()
     // to interact with that SceneGraph).
     MultibodyPlant<double> acrobot;
     Parser parser(&acrobot);
-    parser.AddModelFromFile(getResDir() + "acrobot.sdf");
+    parser.AddModelFromFile(filename);
     // Add gravity to the model.
     acrobot.AddForceElement<UniformGravityFieldElement>();
     // We are done defining the model.

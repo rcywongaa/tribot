@@ -1,5 +1,10 @@
+#pragma once
+
 #include <memory>
+#include <string>
 
 #include "drake/systems/primitives/affine_system.h"
 
-std::unique_ptr<drake::systems::AffineSystem<double>> MakeAcrobotLQRController();
+#include "meta.hpp"
+
+std::unique_ptr<drake::systems::AffineSystem<double>> MakeAcrobotLQRController(std::string filename = getResDir() + "acrobot.sdf");
