@@ -1,6 +1,6 @@
 <?xml version='1.0' ?>
 
-<!-- THIS FILE IS GENERATED FROM segway.rsdf -->
+<!-- THIS FILE IS GENERATED FROM mip.rsdf -->
 
 <sdf version='1.6'>
   <model name='mip'>
@@ -9,9 +9,9 @@
       <inertial>
         <mass>0.2</mass>
         <inertia>
-          <ixx>0.002666666666666667</ixx>
+          <ixx>0.002006666666666667</ixx>
           <iyy>0.004000000000000001</iyy>
-          <izz>0.002666666666666667</izz>
+          <izz>0.002006666666666667</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
@@ -25,7 +25,7 @@
           </mesh>
           <!--<cylinder>-->
             <!--<radius>0.2</radius>-->
-            <!--<length>0.2</length>-->
+            <!--<length>0.02</length>-->
           <!--</cylinder>-->
         </geometry>
       </visual>
@@ -34,7 +34,7 @@
         <geometry>
           <cylinder>
             <radius>0.2</radius>
-            <length>0.2</length>
+            <length>0.02</length>
           </cylinder>
         </geometry>
       </visual>
@@ -46,7 +46,7 @@
           <!--</mesh>-->
           <cylinder>
             <radius>0.2</radius>
-            <length>0.2</length>
+            <length>0.02</length>
           </cylinder>
         </geometry>
       </collision>
@@ -58,10 +58,10 @@
       <self_collide>0</self_collide>
       <pose>0 0 0.5 0 0 0</pose>
       <inertial>
-        <mass>0.5</mass>
+        <mass>0.1</mass>
         <inertia>
-          <ixx>0.16666666666666666</ixx>
-          <iyy>0.16666666666666666</iyy>
+          <ixx>0.03333333333333333</ixx>
+          <iyy>0.03333333333333333</iyy>
           <izz>0</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
@@ -71,7 +71,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.1</radius>
+            <radius>0.04</radius>
             <length>1.0</length>
           </cylinder>
         </geometry>
@@ -80,11 +80,33 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.1</radius>
+            <radius>0.04</radius>
             <length>1.0</length>
           </cylinder>
         </geometry>
       </collision>
+    </link>
+
+    <link name='load'>
+      <pose>0 0 0.5 0 0 0</pose>
+      <inertial>
+        <mass>0.4</mass>
+        <!-- A point mass has zero rotational inertia.
+             We must specify small values since otherwise sdformat throws an
+             exception. -->
+        <inertia>
+          <ixx>1.0e-20</ixx><iyy>1.0e-20</iyy><izz>1.0e-20</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name='load_vis'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.05</radius>
+          </sphere>
+        </geometry>
+      </visual>
     </link>
 
     <link name='x_dummy'>
@@ -146,6 +168,12 @@
         <xyz>0 1.0 0</xyz>
         <!--<use_parent_model_frame>true</use_parent_model_frame>-->
       </axis>
+    </joint>
+
+    <joint name='load_fixture' type='fixed'>
+      <parent>pole</parent>
+      <child>load</child>
+      <pose>0 0 0 0 0 0</pose>
     </joint>
 
   </model>

@@ -9,12 +9,15 @@ using namespace drake;
 // Must be consistent with mip.rsdf
 const double g = 9.81; // gravity
 const double M_w = 0.2; // wheel mass
-const double M_r = 0.5; // rod mass
+const double m_r = 0.1; // rod mass
+const double l_l = 0.5; // load_position
+const double m_l = 0.4; // load mass
+const double M_r = m_r + m_l; // total rod mass
 const double R = 0.2; // wheel radius
 const double L = 1.0; // rod length
 const double l = L/2.0; // half rod length
 const double I_w = 0.5*M_w*R*R; // wheel inertia
-const double I_r = M_r*L*L/3.0; // rod inertia
+const double I_r = m_r*L*L/3.0 + m_l*l_l*l_l; // rod inertia
 
 // Taken from
 // http://renaissance.ucsd.edu/courses/mae143c/MIPdynamics.pdf
@@ -78,7 +81,7 @@ void MIPController<T>::getOutputTorque(const drake::systems::Context<T>& context
 {
     const auto x = this->EvalVectorInput(context, input_idx)->get_value();
     auto mutable_output = output->get_mutable_value();
-    const Vector4<T> x0(0, 10, 0, 0);
+    const Vector4<T> x0(0, 0, 0, 0);
     const Vector1<T> u_v = K * (x0 - x);
     mutable_output[0] = math::saturate(u_v(0), T(-1.0), T(1.0));
     //printf("theta = %f\n", x(0));
