@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 
     auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(func, 16, 4));
     unibot_acrobot_converter->set_name("unibot_acrobot_converter");
-    auto acrobot_controller = builder.AddSystem(MakeAcrobotLQRController());
+    auto acrobot_controller = builder.AddSystem(MakeAcrobotLQRController(getResDir() + "unibot_acrobot.sdf"));
     acrobot_controller->set_name("acrobot_controller");
     auto torque_converter = builder.AddSystem(std::make_unique<TorqueCombiner<double>>());
     torque_converter->set_name("torque_converter");
