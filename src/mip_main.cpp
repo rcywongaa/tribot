@@ -46,8 +46,22 @@ int do_main() {
     printf("plant num positions = %d\n", plant.num_positions());
     printf("plant num velocities = %d\n", plant.num_velocities());
 
+    // Must be consistent with mip.rsdf
+    const double m_r = 0.1; // rod mass
+    const double l_l = 0.5; // load_position
+    const double m_l = 0.4; // load mass
+    const double rod_length = 1.0; // rod length
+
+    MIPConfiguration cfg;
+    cfg.M_w = 0.2; // wheel mass
+    cfg.M_r = m_r + m_l; // total rod mass
+    cfg.R = 0.2; // wheel radius
+    cfg.L = rod_length/2.0; // half rod length
+    cfg.I_w = 0.5*cfg.M_w*cfg.R*cfg.R; // wheel inertia
+    cfg.I_r = m_r*rod_length*rod_length/3.0 + m_l*l_l*l_l; // rod inertia
+
     // Create MIP LQR and connect simulated MIP to LQR
-    auto controller = builder.AddSystem(std::make_unique<MIPController<double>>());
+    auto controller = builder.AddSystem(std::make_unique<MIPController<double>>(cfg, 2*M_PI));
     controller->set_name("MIP_controller");
 
     ConversionFunc func(
@@ -69,7 +83,7 @@ int do_main() {
 
     // Get joints so that we can set initial conditions.
     const RevoluteJoint<double>& theta = plant.GetJointByName<RevoluteJoint>("theta");
-    theta.set_angle(&context, 0.2);
+    theta.set_angle(&context, 0.1*M_PI);
 
     start_simulation(*diagram, std::move(diagram_context), FLAGS_target_realtime_rate);
 
