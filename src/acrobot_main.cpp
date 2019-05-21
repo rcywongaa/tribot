@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 
     DiagramBuilder<double> builder;
 
-    std::string acrobot_model_filename = getResDir() + "acrobot.sdf";
+    std::string acrobot_model_filename = getResDir() + "unibot_acrobot.sdf";
     MultibodyPlant<double>& plant = create_default_plant(acrobot_model_filename, builder, -100.0);
 
     printf("plant.get_state_output_port().size() = %d\n", plant.get_state_output_port().size());
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
     //context.FixInputPort(plant.get_actuation_input_port().get_index(), Vector1d::Zero());
     // Get joints so that we can set initial conditions.
     const RevoluteJoint<double>& theta = plant.GetJointByName<RevoluteJoint>("theta");
-    theta.set_angle(&context, 0.05*M_PI);
+    theta.set_angle(&context, 0.02*M_PI);
 
     start_simulation(*diagram, std::move(diagram_context), FLAGS_target_realtime_rate);
 
