@@ -107,6 +107,10 @@
       <pose>0 0 <%= link1_length - link2_length %> 0 0 0</pose>
       <inertial>
         <mass><%= load_mass %></mass>
+        <inertia>
+          <ixx>1.0e-20</ixx><iyy>1.0e-20</iyy><izz>1.0e-20</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
       </inertial>
       <visual name='load_vis'>
         <pose>0 0 0 0 0 0</pose>
@@ -129,7 +133,7 @@
       <child>wheel</child>
       <pose>0 0 <%= -wheel_radius %> 0 0 0</pose>
       <axis>
-        <xyz>0 1.0 0</xyz>
+        <xyz>1.0 0 0</xyz>
         <limit>
           <effort>0.0</effort>
         </limit>
@@ -141,7 +145,7 @@
       <child>link2</child>
       <pose>0 0 <%= link2_length/2.0 %> 0 0 0</pose>
       <axis>
-        <xyz>0 1.0 0</xyz>
+        <xyz>1.0 0 0</xyz>
       </axis>
     </joint>
 

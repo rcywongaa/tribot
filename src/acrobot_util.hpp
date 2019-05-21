@@ -7,4 +7,4 @@
 
 #include "meta.hpp"
 
-std::unique_ptr<drake::systems::AffineSystem<double>> MakeAcrobotLQRController(std::string filename = getResDir() + "acrobot.sdf");
+std::unique_ptr<drake::systems::AffineSystem<double>> MakeAcrobotLQRController(std::string filename);

@@ -52,6 +52,10 @@
     <link name='load'>
       <pose>0 0 0.19999999999999996 0 0 0</pose>
       <inertial>
+        <inertia>
+          <ixx>1.0e-20</ixx><iyy>1.0e-20</iyy><izz>1.0e-20</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
         <mass>0.5</mass>
       </inertial>
       <visual name='load_vis'>
