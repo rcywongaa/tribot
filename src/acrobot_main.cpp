@@ -19,6 +19,8 @@ DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
         "Simulator::set_target_realtime_rate() for details.");
 
+DEFINE_bool(is_controlled, true, "Whether robot is controlled");
+
 int main(int argc, char* argv[])
 {
     gflags::SetUsageMessage(
@@ -50,7 +52,7 @@ int main(int argc, char* argv[])
     std::unique_ptr<systems::Context<double>> diagram_context = diagram->CreateDefaultContext();
     Context<double>& context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
 
-    //context.FixInputPort(plant.get_actuation_input_port().get_index(), Vector1d::Zero());
+    if (!FLAGS_is_controlled) context.FixInputPort(plant.get_actuation_input_port().get_index(), Vector1d::Zero());
     // Get joints so that we can set initial conditions.
     const RevoluteJoint<double>& theta = plant.GetJointByName<RevoluteJoint>("theta");
     theta.set_angle(&context, 0.02*M_PI);
