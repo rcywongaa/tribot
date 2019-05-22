@@ -15,6 +15,7 @@ add_executable(unibot
     src/drake_util.cpp
     src/unibot_util.cpp
     src/acrobot_util.cpp
+    src/mip_util.cpp
     src/StateConverter.cpp
     src/unibot_main.cpp)
 target_link_libraries(unibot
