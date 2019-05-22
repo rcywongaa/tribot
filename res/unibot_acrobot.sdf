@@ -44,7 +44,7 @@
         <inertia>
           <ixx>0.03333333333333333</ixx>
           <iyy>0.03333333333333333</iyy>
-          <izz>0</izz>
+          <izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
@@ -53,7 +53,7 @@
         <geometry>
           <cylinder>
             <radius>0.04</radius>
-            <length>1</length>
+            <length>1.0</length>
           </cylinder>
         </geometry>
       </visual>
@@ -66,7 +66,7 @@
         <inertia>
           <ixx>0.017066666666666667</ixx>
           <iyy>0.017066666666666667</iyy>
-          <izz>0</izz>
+          <izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
@@ -100,12 +100,6 @@
       </visual>
     </link>
 
-    <joint name='wheel_attach' type='fixed'>
-      <parent>wheel</parent>
-      <child>link1</child>
-      <pose>0 0 -0.5 0 0 0</pose>
-    </joint>
-
     <joint name='theta' type='revolute'>
       <parent>world</parent>
       <child>wheel</child>
@@ -131,6 +125,12 @@
       <parent>link2</parent>
       <child>load</child>
       <pose>0 0 0 0 0 0</pose>
+    </joint>
+
+    <joint name='wheel_attach' type='fixed'>
+      <parent>wheel</parent>
+      <child>link1</child>
+      <pose>0 0 -0.5 0 0 0</pose>
     </joint>
 
   </model>
