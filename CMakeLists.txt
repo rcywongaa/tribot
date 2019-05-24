@@ -17,6 +17,7 @@ add_executable(unibot
     src/acrobot_util.cpp
     src/mip_util.cpp
     src/StateConverter.cpp
+    src/Inspector.cpp
     src/unibot_main.cpp)
 target_link_libraries(unibot
   drake::drake drake::drake-common-text-logging-gflags gflags_shared
