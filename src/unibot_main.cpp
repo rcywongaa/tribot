@@ -93,13 +93,13 @@ int main(int argc, char* argv[])
             unibot_to_acrobot_state<double>,
             unibot_to_acrobot_state<drake::AutoDiffXd>,
             unibot_to_acrobot_state<drake::symbolic::Expression>);
+    auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_acrobot_func, 17, 4));
+    unibot_acrobot_converter->set_name("unibot_acrobot_converter");
 
     ConversionFunc unibot_to_mip_func(
             unibot_to_mip_state<double>,
             unibot_to_mip_state<drake::AutoDiffXd>,
             unibot_to_mip_state<drake::symbolic::Expression>);
-    auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_acrobot_func, 16, 4));
-    unibot_acrobot_converter->set_name("unibot_acrobot_converter");
     auto unibot_mip_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_mip_func, 17, 4));
     unibot_mip_converter->set_name("unibot_mip_converter");
 
