@@ -54,3 +54,11 @@ class StateConverter : public drake::systems::LeafSystem<T>
         unsigned int input_size;
         unsigned int output_size;
 };
+
+namespace drake {
+namespace systems {
+namespace scalar_conversion {
+template <> struct Traits<StateConverter> : public NonSymbolicTraits {};
+}  // namespace scalar_conversion
+}  // namespace systems
+}  // namespace drake
