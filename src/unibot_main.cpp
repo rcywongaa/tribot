@@ -77,6 +77,14 @@ void inspect_unibot(const Eigen::VectorBlock<const VectorX<T>>& state)
     //printf("yaw = %f\n", rpy.yaw_angle());
 }
 
+template <typename T>
+void inspect_torques(const Eigen::VectorBlock<const VectorX<T>>& input)
+{
+    ;
+    //printf("alpha: %f\n", input[0]);
+    //printf("beta: %f\n", input[1]);
+}
+
 int main(int argc, char* argv[])
 {
     gflags::SetUsageMessage(
@@ -118,6 +126,13 @@ int main(int argc, char* argv[])
     auto unibot_inspector = builder.AddSystem(std::make_unique<Inspector<double>>(inspect_unibot_func, STATE_SIZE));
     unibot_inspector->set_name("unibot_inspector");
 
+    InspectionFunc inspect_torque_func(
+            inspect_torques<double>,
+            inspect_torques<drake::AutoDiffXd>,
+            inspect_torques<drake::symbolic::Expression>);
+    auto torque_inspector = builder.AddSystem(std::make_unique<Inspector<double>>(inspect_torque_func, 2));
+    torque_inspector->set_name("torque_inspector");
+
     // Must be consistent with mip.rsdf
     const double m_r = 0.1; // rod mass
     const double l_l = 0.5; // load_position
@@ -146,7 +161,8 @@ int main(int argc, char* argv[])
     builder.Connect(unibot_mip_converter->get_output_port(), mip_controller->mip_state_input());
     builder.Connect(mip_controller->torque_output(), torque_converter->get_mip_input_port());
 
-    builder.Connect(torque_converter->get_torque_output_port(), plant.get_actuation_input_port());
+    builder.Connect(torque_converter->get_torque_output_port(), torque_inspector->get_input_port());
+    builder.Connect(torque_inspector->get_output_port(), plant.get_actuation_input_port());
 
     auto diagram = builder.Build();
 
