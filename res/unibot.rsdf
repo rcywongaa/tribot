@@ -132,7 +132,7 @@
       </visual>
     </link>
 
-    <joint name='phi' type='revolute'>
+    <joint name='alpha' type='revolute'>
       <parent>link1</parent>
       <child>link2</child>
       <pose>0 0 <%= link2_length/2.0 %> 0 0 0</pose>
@@ -147,7 +147,7 @@
       <pose>0 0 0 0 0 0</pose>
     </joint>
 
-    <joint name='wheel_joint' type='revolute'>
+    <joint name='beta' type='revolute'>
       <!--With respect to child frame-->
       <pose>0 0 0 0 0 0</pose>
       <parent>link1</parent>
