@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 
     DiagramBuilder<double> builder;
 
-    MultibodyPlant<double>& plant = create_default_plant(getResDir() + "unibot.sdf", builder, -0.20);
+    MultibodyPlant<double>& plant = create_default_plant(getResDir() + "unibot.sdf", builder, -0.90);
 
     printf("plant.get_state_output_port().size() = %d\n", plant.get_state_output_port().size());
     printf("plant num positions = %d\n", plant.num_positions());
@@ -151,16 +151,9 @@ int main(int argc, char* argv[])
     //torque_converter_context.FixInputPort(torque_converter->get_mip_input_port().get_index(), Vector1d::Zero());
     torque_converter_context.FixInputPort(torque_converter->get_acrobot_input_port().get_index(), Vector1d::Zero());
 
-    // Create a plant_context for this system:
     Context<double>& plant_context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
-
-    // Sanity check to make sure unibot falls forward and sideways correctly
-    const RevoluteJoint<double>& theta = plant.GetJointByName<RevoluteJoint>("theta"); // pitch
-    theta.set_angle(&plant_context, 0.10*M_PI);
-    //const RevoluteJoint<double>& roll = plant.GetJointByName<RevoluteJoint>("roll");
-    //roll.set_angle(&plant_context, 0.02*M_PI);
-    //const RevoluteJoint<double>& yaw = plant.GetJointByName<RevoluteJoint>("yaw");
-    //yaw.set_angle(&plant_context, 0.30);
+    VectorBase<double>& state = plant_context.get_mutable_continuous_state_vector();
+    state.SetAtIndex(7, 0.5*M_PI);
 
     start_simulation(*diagram, std::move(diagram_context), FLAGS_target_realtime_rate);
 
