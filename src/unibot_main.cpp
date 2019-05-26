@@ -24,6 +24,25 @@ DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
         "Simulator::set_target_realtime_rate() for details.");
 
+const unsigned int Q_W_IDX = 0;
+const unsigned int Q_X_IDX = 1;
+const unsigned int Q_Y_IDX = 2;
+const unsigned int Q_Z_IDX = 3;
+const unsigned int X_IDX = 4;
+const unsigned int Y_IDX = 5;
+const unsigned int Z_IDX = 6;
+const unsigned int ALPHA_IDX = 7; // link1-link2 joint
+const unsigned int BETA_IDX = 8; // link1-wheel joint
+const unsigned int ROLL_D_IDX = 9;
+const unsigned int PITCH_D_IDX = 10;
+const unsigned int YAW_D_IDX = 11;
+const unsigned int X_D_IDX = 12;
+const unsigned int Y_D_IDX = 13;
+const unsigned int Z_D_IDX = 14;
+const unsigned int ALPHA_D_IDX = 15;
+const unsigned int BETA_D_IDX = 16;
+const unsigned int STATE_SIZE = 17;
+
 template <typename T>
 void unibot_to_acrobot_state(const Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
 {
@@ -36,36 +55,22 @@ void unibot_to_acrobot_state(const Eigen::VectorBlock<const VectorX<T>>& state, 
 template <typename T>
 void unibot_to_mip_state(const Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
 {
-    drake::math::RollPitchYaw<T> rpy(Eigen::Quaternion<T>(state[0], state[1], state[2], state[3]));
+    drake::math::RollPitchYaw<T> rpy(Eigen::Quaternion<T>(
+                state[Q_W_IDX], state[Q_X_IDX], state[Q_Y_IDX], state[Q_Z_IDX]));
     output[0] = rpy.pitch_angle(); // theta (pitch of the rod)
     //printf("pitch of rod = %f\n", output[0]);
-    output[1] = output[0] + state[8]; // psi (wheel angle) = pitch of rod + rodwheel angle
+    output[1] = output[0] + state[BETA_IDX]; // psi (wheel angle) = pitch of rod + rod-wheel angle
     //printf("wheel angle = %f\n", output[1]);
-    output[2] = state[9]; // theta_dot
-    output[3] = output[2] + state[16]; // psi_dot
+    output[2] = state[PITCH_D_IDX]; // theta_dot
+    output[3] = output[2] + state[BETA_D_IDX]; // psi_dot
 }
 
-// state[0] = q1
-// state[1] = q2
-// state[2] = q3
-// state[3] = q4
-// state[4] = x
-// state[5] = y
-// state[6] = z
-// state[7] = phi
-// state[8] = wheel_joint
-// state[9] = roll_dot
-// state[12] = x_dot
-// state[13] = y_dot
-// state[14] = z_dot
-// state[15] = phi_dot
-// state[16] = wheel_dot
 template <typename T>
 void inspect_unibot(const Eigen::VectorBlock<const VectorX<T>>& state)
 {
-    printf("x = %f\n", state[4]);
-    printf("y = %f\n", state[5]);
-    printf("z = %f\n", state[6]);
+    printf("roll_d = %f\n", state[ROLL_D_IDX]);
+    printf("pitch_d = %f\n", state[PITCH_D_IDX]);
+    printf("yaw_d = %f\n", state[YAW_D_IDX]);
     //drake::math::RollPitchYaw<T> rpy(Eigen::Quaternion<T>(state[0], state[1], state[2], state[3]));
     //printf("roll = %f\n", rpy.roll_angle());
     //printf("pitch = %f\n", rpy.pitch_angle());
@@ -83,7 +88,7 @@ int main(int argc, char* argv[])
 
     DiagramBuilder<double> builder;
 
-    MultibodyPlant<double>& plant = create_default_plant(getResDir() + "unibot.sdf", builder, -0.90);
+    MultibodyPlant<double>& plant = create_default_plant(getResDir() + "unibot.sdf", builder, 0.00);
 
     printf("plant.get_state_output_port().size() = %d\n", plant.get_state_output_port().size());
     printf("plant num positions = %d\n", plant.num_positions());
@@ -93,14 +98,14 @@ int main(int argc, char* argv[])
             unibot_to_acrobot_state<double>,
             unibot_to_acrobot_state<drake::AutoDiffXd>,
             unibot_to_acrobot_state<drake::symbolic::Expression>);
-    auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_acrobot_func, 17, 4));
+    auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_acrobot_func, STATE_SIZE, 4));
     unibot_acrobot_converter->set_name("unibot_acrobot_converter");
 
     ConversionFunc unibot_to_mip_func(
             unibot_to_mip_state<double>,
             unibot_to_mip_state<drake::AutoDiffXd>,
             unibot_to_mip_state<drake::symbolic::Expression>);
-    auto unibot_mip_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_mip_func, 17, 4));
+    auto unibot_mip_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_mip_func, STATE_SIZE, 4));
     unibot_mip_converter->set_name("unibot_mip_converter");
 
     auto acrobot_controller = builder.AddSystem(MakeAcrobotLQRController(getResDir() + "unibot_acrobot.sdf"));
@@ -110,7 +115,7 @@ int main(int argc, char* argv[])
             inspect_unibot<double>,
             inspect_unibot<drake::AutoDiffXd>,
             inspect_unibot<drake::symbolic::Expression>);
-    auto unibot_inspector = builder.AddSystem(std::make_unique<Inspector<double>>(inspect_unibot_func, 17));
+    auto unibot_inspector = builder.AddSystem(std::make_unique<Inspector<double>>(inspect_unibot_func, STATE_SIZE));
     unibot_inspector->set_name("unibot_inspector");
 
     // Must be consistent with mip.rsdf
@@ -151,9 +156,18 @@ int main(int argc, char* argv[])
     //torque_converter_context.FixInputPort(torque_converter->get_mip_input_port().get_index(), Vector1d::Zero());
     torque_converter_context.FixInputPort(torque_converter->get_acrobot_input_port().get_index(), Vector1d::Zero());
 
+    VectorX<double> initial_state(Eigen::Matrix<double, STATE_SIZE, 1>::Zero());
+    drake::math::RollPitchYaw<double> initial_rpy(0.0, 0.2*M_PI, 0.0);
+    Eigen::Quaternion<double> q = initial_rpy.ToQuaternion();
+    initial_state[Q_W_IDX] = q.w();
+    initial_state[Q_X_IDX] = q.x();
+    initial_state[Q_Y_IDX] = q.y();
+    initial_state[Q_Z_IDX] = q.z();
+    initial_state[Z_IDX] = cfg.L + cfg.R;
     Context<double>& plant_context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
     VectorBase<double>& state = plant_context.get_mutable_continuous_state_vector();
-    state.SetAtIndex(7, 0.5*M_PI);
+    state.SetFromVector(initial_state);
+    //state.SetAtIndex(7, 0.5*M_PI);
 
     start_simulation(*diagram, std::move(diagram_context), FLAGS_target_realtime_rate);
 
