@@ -33,9 +33,9 @@ const unsigned int Y_IDX = 5;
 const unsigned int Z_IDX = 6;
 const unsigned int ALPHA_IDX = 7; // link1-link2 joint
 const unsigned int BETA_IDX = 8; // link1-wheel joint
-const unsigned int ROLL_D_IDX = 9;
-const unsigned int PITCH_D_IDX = 10;
-const unsigned int YAW_D_IDX = 11;
+const unsigned int AA_D_X_IDX = 9; // X component of angular velocity in angle-axis form
+const unsigned int AA_D_Y_IDX = 10; // Y component of angular velocity in angle-axis form
+const unsigned int AA_D_Z_IDX = 11; // Z component of angular velocity in angle-axis form
 const unsigned int X_D_IDX = 12;
 const unsigned int Y_D_IDX = 13;
 const unsigned int Z_D_IDX = 14;
@@ -46,35 +46,38 @@ const unsigned int STATE_SIZE = 17;
 template <typename T>
 void unibot_to_acrobot_state(const Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
 {
-    output[0] = state[4]; // roll of the rod
-    output[1] = state[6]; // phi (angle between link1 and link2)
-    output[2] = state[12]; // roll_dot
-    output[3] = state[14]; // phi_dot
+    Eigen::Quaternion<T> body_rotation(state[Q_W_IDX], state[Q_X_IDX], state[Q_Y_IDX], state[Q_Z_IDX]);
+    Vector3<T> angle_axis_d(state[AA_D_X_IDX], state[AA_D_Y_IDX], state[AA_D_Z_IDX]);
+    Vector3<T> rpy_d = body_rotation.inverse() * angle_axis_d;
+    drake::math::RollPitchYaw<T> rpy(body_rotation);
+    output[0] = rpy.roll_angle(); // roll of the rod
+    output[1] = state[ALPHA_IDX]; // phi (angle between link1 and link2)
+    output[2] = rpy_d[0]; // roll_dot
+    output[3] = state[ALPHA_D_IDX]; // phi_dot
 }
 
 template <typename T>
 void unibot_to_mip_state(const Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
 {
-    drake::math::RollPitchYaw<T> rpy(Eigen::Quaternion<T>(
-                state[Q_W_IDX], state[Q_X_IDX], state[Q_Y_IDX], state[Q_Z_IDX]));
+    Eigen::Quaternion<T> body_rotation(state[Q_W_IDX], state[Q_X_IDX], state[Q_Y_IDX], state[Q_Z_IDX]);
+    Vector3<T> angle_axis_d(state[AA_D_X_IDX], state[AA_D_Y_IDX], state[AA_D_Z_IDX]);
+    Vector3<T> rpy_d = body_rotation.inverse() * angle_axis_d;
+    drake::math::RollPitchYaw<T> rpy(body_rotation);
     output[0] = rpy.pitch_angle(); // theta (pitch of the rod)
-    //printf("pitch of rod = %f\n", output[0]);
     output[1] = output[0] + state[BETA_IDX]; // psi (wheel angle) = pitch of rod + rod-wheel angle
-    //printf("wheel angle = %f\n", output[1]);
-    output[2] = state[PITCH_D_IDX]; // theta_dot
+    output[2] = rpy_d[1]; // theta_dot
     output[3] = output[2] + state[BETA_D_IDX]; // psi_dot
 }
 
 template <typename T>
 void inspect_unibot(const Eigen::VectorBlock<const VectorX<T>>& state)
 {
-    printf("roll_d = %f\n", state[ROLL_D_IDX]);
-    printf("pitch_d = %f\n", state[PITCH_D_IDX]);
-    printf("yaw_d = %f\n", state[YAW_D_IDX]);
-    //drake::math::RollPitchYaw<T> rpy(Eigen::Quaternion<T>(state[0], state[1], state[2], state[3]));
-    //printf("roll = %f\n", rpy.roll_angle());
-    //printf("pitch = %f\n", rpy.pitch_angle());
-    //printf("yaw = %f\n", rpy.yaw_angle());
+    Eigen::Quaternion<T> body_rotation(state[Q_W_IDX], state[Q_X_IDX], state[Q_Y_IDX], state[Q_Z_IDX]);
+    Vector3<T> angle_axis_d(state[AA_D_X_IDX], state[AA_D_Y_IDX], state[AA_D_Z_IDX]);
+    Vector3<T> rotated_angle_axis_d = body_rotation.inverse() * angle_axis_d;
+    printf("roll_d = %f\n", rotated_angle_axis_d[0]);
+    printf("pitch_d = %f\n", rotated_angle_axis_d[1]);
+    printf("yaw_d = %f\n", rotated_angle_axis_d[2]);
 }
 
 template <typename T>
@@ -170,10 +173,10 @@ int main(int argc, char* argv[])
 
     Context<double>& torque_converter_context = diagram->GetMutableSubsystemContext(*torque_converter, diagram_context.get());
     //torque_converter_context.FixInputPort(torque_converter->get_mip_input_port().get_index(), Vector1d::Zero());
-    torque_converter_context.FixInputPort(torque_converter->get_acrobot_input_port().get_index(), Vector1d::Zero());
+    //torque_converter_context.FixInputPort(torque_converter->get_acrobot_input_port().get_index(), Vector1d::Zero());
 
     VectorX<double> initial_state(Eigen::Matrix<double, STATE_SIZE, 1>::Zero());
-    drake::math::RollPitchYaw<double> initial_rpy(0.0, 0.2*M_PI, 0.0);
+    drake::math::RollPitchYaw<double> initial_rpy(0.0, 0.10*M_PI, 0.0);
     Eigen::Quaternion<double> q = initial_rpy.ToQuaternion();
     initial_state[Q_W_IDX] = q.w();
     initial_state[Q_X_IDX] = q.x();
@@ -183,7 +186,6 @@ int main(int argc, char* argv[])
     Context<double>& plant_context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
     VectorBase<double>& state = plant_context.get_mutable_continuous_state_vector();
     state.SetFromVector(initial_state);
-    //state.SetAtIndex(7, 0.5*M_PI);
 
     start_simulation(*diagram, std::move(diagram_context), FLAGS_target_realtime_rate);
 
