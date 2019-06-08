@@ -14,11 +14,15 @@
 #include "mip_util.hpp"
 #include "StateConverter.hpp"
 #include "Inspector.hpp"
+#include "UnibotPlant.hpp"
+#include "UnibotVisualizer.hpp"
 
 using namespace Eigen;
 using namespace drake;
 using namespace drake::systems;
 using namespace drake::multibody;
+
+using namespace UnibotStateIndex;
 
 DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
@@ -32,49 +36,22 @@ const double l2_m = 0.08; // link2 mass
 const double l2_l = 0.8; // link2 length
 const double p_m = 0.5; // point mass
 
-const unsigned int Q_W_IDX = 0;
-const unsigned int Q_X_IDX = 1;
-const unsigned int Q_Y_IDX = 2;
-const unsigned int Q_Z_IDX = 3;
-const unsigned int X_IDX = 4;
-const unsigned int Y_IDX = 5;
-const unsigned int Z_IDX = 6;
-const unsigned int ALPHA_IDX = 7; // link1-link2 joint
-const unsigned int BETA_IDX = 8; // link1-wheel joint
-const unsigned int AA_D_X_IDX = 9; // X component of angular velocity in angle-axis form
-const unsigned int AA_D_Y_IDX = 10; // Y component of angular velocity in angle-axis form
-const unsigned int AA_D_Z_IDX = 11; // Z component of angular velocity in angle-axis form
-const unsigned int X_D_IDX = 12;
-const unsigned int Y_D_IDX = 13;
-const unsigned int Z_D_IDX = 14;
-const unsigned int ALPHA_D_IDX = 15;
-const unsigned int BETA_D_IDX = 16;
-const unsigned int STATE_SIZE = 17;
-
 template <typename T>
 void unibot_to_acrobot_state(const Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
 {
-    Eigen::Quaternion<T> body_rotation(state[Q_W_IDX], state[Q_X_IDX], state[Q_Y_IDX], state[Q_Z_IDX]);
-    Vector3<T> angle_axis_d(state[AA_D_X_IDX], state[AA_D_Y_IDX], state[AA_D_Z_IDX]);
-    Vector3<T> rpy_d = body_rotation.inverse() * angle_axis_d;
-    drake::math::RollPitchYaw<T> rpy(body_rotation);
-    output[0] = rpy.roll_angle(); // roll of the rod
-    output[1] = state[ALPHA_IDX]; // phi (angle between link1 and link2)
-    output[2] = rpy_d[0]; // roll_dot
-    output[3] = state[ALPHA_D_IDX]; // phi_dot
+    output[0] = state[ROLL]; // roll of the rod
+    output[1] = state[ALPHA]; // alpha - angle between link1 and link2
+    output[2] = state[ROLL_D]; // roll_dot
+    output[3] = state[ALPHA_D]; // alpha_dot
 }
 
 template <typename T>
 void unibot_to_mip_state(const Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
 {
-    Eigen::Quaternion<T> body_rotation(state[Q_W_IDX], state[Q_X_IDX], state[Q_Y_IDX], state[Q_Z_IDX]);
-    Vector3<T> angle_axis_d(state[AA_D_X_IDX], state[AA_D_Y_IDX], state[AA_D_Z_IDX]);
-    Vector3<T> rpy_d = body_rotation.inverse() * angle_axis_d;
-    drake::math::RollPitchYaw<T> rpy(body_rotation);
-    output[0] = rpy.pitch_angle(); // theta (pitch of the rod)
-    output[1] = output[0] + state[BETA_IDX]; // psi (wheel angle) = pitch of rod + rod-wheel angle
-    output[2] = rpy_d[1]; // theta_dot
-    output[3] = output[2] + state[BETA_D_IDX]; // psi_dot
+    output[0] = state[PITCH]; // theta (pitch of the rod)
+    output[1] = output[0] + state[BETA]; // psi (wheel angle) = pitch of rod + rod-wheel angle
+    output[2] = state[PITCH_D]; // theta_dot
+    output[3] = output[2] + state[BETA_D]; // psi_dot
 }
 
 template <typename T>
@@ -108,24 +85,29 @@ int main(int argc, char* argv[])
 
     DiagramBuilder<double> builder;
 
-    MultibodyPlant<double>& plant = create_default_plant(getResDir() + "unibot.sdf", builder, 0.00);
-
-    printf("plant.get_state_output_port().size() = %d\n", plant.get_state_output_port().size());
-    printf("plant num positions = %d\n", plant.num_positions());
-    printf("plant num velocities = %d\n", plant.num_velocities());
+    UnibotConfig unibot_config;
+    unibot_config.w_r = w_r;
+    unibot_config.w_m = w_m;
+    unibot_config.l1_m = l1_m;
+    unibot_config.l1_l = l1_l;
+    unibot_config.l2_m = l2_m;
+    unibot_config.l2_l = l2_l;
+    unibot_config.p_m = p_m;
+    auto plant = builder.AddSystem(std::make_unique<UnibotPlant<double>>(unibot_config));
+    int plant_state_size = plant->get_state_output_port().size();
 
     ConversionFunc unibot_to_acrobot_func(
             unibot_to_acrobot_state<double>,
             unibot_to_acrobot_state<drake::AutoDiffXd>,
             unibot_to_acrobot_state<drake::symbolic::Expression>);
-    auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_acrobot_func, STATE_SIZE, 4));
+    auto unibot_acrobot_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_acrobot_func, plant_state_size, 4));
     unibot_acrobot_converter->set_name("unibot_acrobot_converter");
 
     ConversionFunc unibot_to_mip_func(
             unibot_to_mip_state<double>,
             unibot_to_mip_state<drake::AutoDiffXd>,
             unibot_to_mip_state<drake::symbolic::Expression>);
-    auto unibot_mip_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_mip_func, STATE_SIZE, 4));
+    auto unibot_mip_converter = builder.AddSystem(std::make_unique<StateConverter<double>>(unibot_to_mip_func, plant_state_size, 4));
     unibot_mip_converter->set_name("unibot_mip_converter");
 
     auto acrobot_controller = builder.AddSystem(MakeAcrobotLQRController(getResDir() + "unibot_acrobot.sdf"));
@@ -135,7 +117,7 @@ int main(int argc, char* argv[])
             inspect_unibot<double>,
             inspect_unibot<drake::AutoDiffXd>,
             inspect_unibot<drake::symbolic::Expression>);
-    auto unibot_inspector = builder.AddSystem(std::make_unique<Inspector<double>>(inspect_unibot_func, STATE_SIZE));
+    auto unibot_inspector = builder.AddSystem(std::make_unique<Inspector<double>>(inspect_unibot_func, plant_state_size));
     unibot_inspector->set_name("unibot_inspector");
 
     InspectionFunc inspect_torque_func(
@@ -158,17 +140,19 @@ int main(int argc, char* argv[])
     auto torque_converter = builder.AddSystem(std::make_unique<TorqueCombiner<double>>());
     torque_converter->set_name("torque_converter");
 
-    builder.Connect(plant.get_state_output_port(), unibot_acrobot_converter->get_input_port());
+    builder.Connect(plant->get_state_output_port(), unibot_acrobot_converter->get_input_port());
     builder.Connect(unibot_acrobot_converter->get_output_port(), acrobot_controller->get_input_port());
     builder.Connect(acrobot_controller->get_output_port(), torque_converter->get_acrobot_input_port());
 
-    builder.Connect(plant.get_state_output_port(), unibot_inspector->get_input_port());
+    builder.Connect(plant->get_state_output_port(), unibot_inspector->get_input_port());
     builder.Connect(unibot_inspector->get_output_port(), unibot_mip_converter->get_input_port());
     builder.Connect(unibot_mip_converter->get_output_port(), mip_controller->mip_state_input());
     builder.Connect(mip_controller->torque_output(), torque_converter->get_mip_input_port());
 
     builder.Connect(torque_converter->get_torque_output_port(), torque_inspector->get_input_port());
-    builder.Connect(torque_inspector->get_output_port(), plant.get_actuation_input_port());
+    builder.Connect(torque_inspector->get_output_port(), plant->get_actuation_input_port());
+
+    UnibotVisualizer::AddToBuilder(&builder, plant->get_state_output_port());
 
     auto diagram = builder.Build();
 
@@ -178,15 +162,12 @@ int main(int argc, char* argv[])
     //torque_converter_context.FixInputPort(torque_converter->get_mip_input_port().get_index(), Vector1d::Zero());
     //torque_converter_context.FixInputPort(torque_converter->get_acrobot_input_port().get_index(), Vector1d::Zero());
 
-    VectorX<double> initial_state(Eigen::Matrix<double, STATE_SIZE, 1>::Zero());
-    drake::math::RollPitchYaw<double> initial_rpy(0.0, 0.10*M_PI, 0.0);
-    Eigen::Quaternion<double> q = initial_rpy.ToQuaternion();
-    initial_state[Q_W_IDX] = q.w();
-    initial_state[Q_X_IDX] = q.x();
-    initial_state[Q_Y_IDX] = q.y();
-    initial_state[Q_Z_IDX] = q.z();
-    initial_state[Z_IDX] = w_r;
-    Context<double>& plant_context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
+    VectorX<double> initial_state(Eigen::Matrix<double, NUM_STATES, 1>::Zero());
+    initial_state[ROLL] = 0.0;
+    initial_state[PITCH] = 0.10*M_PI;
+    initial_state[YAW] = 0.0;
+    initial_state[Z] = w_r;
+    Context<double>& plant_context = diagram->GetMutableSubsystemContext(*plant, diagram_context.get());
     VectorBase<double>& state = plant_context.get_mutable_continuous_state_vector();
     state.SetFromVector(initial_state);
 

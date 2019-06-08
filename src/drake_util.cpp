@@ -11,7 +11,6 @@ using namespace drake;
 
 drake::multibody::MultibodyPlant<double>& create_default_plant(std::string model_filename, drake::systems::DiagramBuilder<double>& builder, double ground_offset)
 {
-
     // If greater than zero, the plant is modeled as a system with
     // discrete updates and period equal to this time_step.
     // If 0, the plant is modeled as a continuous system.
