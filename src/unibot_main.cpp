@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
     initial_state[Q_X_IDX] = q.x();
     initial_state[Q_Y_IDX] = q.y();
     initial_state[Q_Z_IDX] = q.z();
-    initial_state[Z_IDX] = cfg.L + cfg.R;
+    initial_state[Z_IDX] = cfg.R;
     Context<double>& plant_context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
     VectorBase<double>& state = plant_context.get_mutable_continuous_state_vector();
     state.SetFromVector(initial_state);

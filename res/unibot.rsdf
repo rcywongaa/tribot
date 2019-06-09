@@ -58,7 +58,7 @@
     </link>
 
     <link name='link1'>
-      <pose>0 0 <%= link1_length/2.0%> 0 0 0</pose>
+      <pose>0 0 0 0 0 0</pose>
       <inertial>
         <mass><%= link1_mass %></mass>
         <inertia>
@@ -69,7 +69,7 @@
         </inertia>
       </inertial>
       <visual name='link1_vis'>
-        <pose>0 0 0 0 0 0</pose>
+        <pose>0 0 <%= link1_length/2.0%> 0 0 0</pose>
         <geometry>
           <cylinder>
             <radius><%= link1_radius %></radius>
@@ -78,7 +78,7 @@
         </geometry>
       </visual>
       <collision name='link1_col'>
-        <pose>0 0 0 0 0 0</pose>
+        <pose>0 0 <%= link1_length/2.0%> 0 0 0</pose>
         <geometry>
           <cylinder>
             <radius><%= link1_radius %></radius>
@@ -89,7 +89,7 @@
     </link>
 
     <link name='link2'>
-      <pose>0 0 <%= link1_length - link2_length/2.0 %> 0 0 0</pose>
+      <pose>0 0 <%= link1_length %> 0 0 0</pose>
       <inertial>
         <mass><%= link2_mass %></mass>
         <inertia>
@@ -100,7 +100,7 @@
         </inertia>
       </inertial>
       <visual name='link2_vis'>
-        <pose>0 0 0 0 0 0</pose>
+        <pose>0 0 <%= -link2_length/2.0 %> 0 0 0</pose>
         <geometry>
           <cylinder>
             <radius><%= link2_radius %></radius>
@@ -135,7 +135,7 @@
     <joint name='alpha' type='revolute'>
       <parent>link1</parent>
       <child>link2</child>
-      <pose>0 0 <%= link2_length/2.0 %> 0 0 0</pose>
+      <pose>0 0 0 0 0 0</pose>
       <axis>
         <xyz>1.0 0 0</xyz>
       </axis>
