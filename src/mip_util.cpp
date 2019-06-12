@@ -81,10 +81,8 @@ void MIPController<T>::getOutputTorque(const drake::systems::Context<T>& context
     const Vector4<T> x0(0, target_wheel_rotation, 0, 0);
     const Vector1<T> u_v = K * (x0 - x);
     mutable_output[0] = math::saturate(u_v(0), T(-1.0), T(1.0));
-    //printf("theta = %f\n", x(0));
+    //mutable_output[0] = 0.0;
     //const T cost = (x - x0).dot(S * (x - x0));
-    //printf("cost = %f\n", cost);
-    //printf("output_torque = %f\n", mutable_output[0]);
 }
 
 template <typename T>
