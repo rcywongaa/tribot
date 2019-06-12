@@ -24,6 +24,14 @@ DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
         "Simulator::set_target_realtime_rate() for details.");
 
+const double w_r = 0.2; // wheel radius
+const double w_m = 0.2; // wheel mass
+const double l1_m = 0.1; // link1 mass
+const double l1_l = 1.0; // link1 length
+const double l2_m = 0.08; // link2 mass
+const double l2_l = 0.8; // link2 length
+const double p_m = 0.5; // point mass
+
 const unsigned int Q_W_IDX = 0;
 const unsigned int Q_X_IDX = 1;
 const unsigned int Q_Y_IDX = 2;
@@ -72,12 +80,13 @@ void unibot_to_mip_state(const Eigen::VectorBlock<const VectorX<T>>& state, Eige
 template <typename T>
 void inspect_unibot(const Eigen::VectorBlock<const VectorX<T>>& state)
 {
-    Eigen::Quaternion<T> body_rotation(state[Q_W_IDX], state[Q_X_IDX], state[Q_Y_IDX], state[Q_Z_IDX]);
-    Vector3<T> angle_axis_d(state[AA_D_X_IDX], state[AA_D_Y_IDX], state[AA_D_Z_IDX]);
-    Vector3<T> rotated_angle_axis_d = body_rotation.inverse() * angle_axis_d;
-    printf("roll_d = %f\n", rotated_angle_axis_d[0]);
-    printf("pitch_d = %f\n", rotated_angle_axis_d[1]);
-    printf("yaw_d = %f\n", rotated_angle_axis_d[2]);
+    ;
+    //Eigen::Quaternion<T> body_rotation(state[Q_W_IDX], state[Q_X_IDX], state[Q_Y_IDX], state[Q_Z_IDX]);
+    //Vector3<T> angle_axis_d(state[AA_D_X_IDX], state[AA_D_Y_IDX], state[AA_D_Z_IDX]);
+    //Vector3<T> rotated_angle_axis_d = body_rotation.inverse() * angle_axis_d;
+    //printf("roll_d = %f\n", rotated_angle_axis_d[0]);
+    //printf("pitch_d = %f\n", rotated_angle_axis_d[1]);
+    //printf("yaw_d = %f\n", rotated_angle_axis_d[2]);
 }
 
 template <typename T>
@@ -136,20 +145,14 @@ int main(int argc, char* argv[])
     auto torque_inspector = builder.AddSystem(std::make_unique<Inspector<double>>(inspect_torque_func, 2));
     torque_inspector->set_name("torque_inspector");
 
-    // Must be consistent with mip.rsdf
-    const double m_r = 0.1; // rod mass
-    const double l_l = 0.5; // load_position
-    const double m_l = 0.4; // load mass
-    const double rod_length = 1.0; // rod length
-
-    MIPConfiguration cfg;
-    cfg.M_w = 0.2; // wheel mass
-    cfg.M_r = m_r + m_l; // total rod mass
-    cfg.R = 0.2; // wheel radius
-    cfg.L = rod_length/2.0; // half rod length
-    cfg.I_w = 0.5*cfg.M_w*cfg.R*cfg.R; // wheel inertia
-    cfg.I_r = m_r*rod_length*rod_length/3.0 + m_l*l_l*l_l; // rod inertia
-    auto mip_controller = builder.AddSystem(std::make_unique<MIPController<double>>(cfg, 0.0));
+    MIPConfiguration mip_config;
+    mip_config.M_w = w_m; // wheel mass
+    mip_config.M_r = l1_m + l2_m + p_m; // total rod mass
+    mip_config.R = w_r; // wheel radius
+    mip_config.L = l1_l/2.0; // half rod length
+    mip_config.I_w = 0.5*w_m*std::pow(w_r, 2); // wheel inertia
+    mip_config.I_r = l1_m*std::pow(l1_l, 2)/3.0 + l2_m*((std::pow(l2_l, 2)/3.0) + std::pow(l1_l - l2_l, 2)) + p_m*std::pow(l1_l - l2_l, 2); // rod inertia
+    auto mip_controller = builder.AddSystem(std::make_unique<MIPController<double>>(mip_config, 2.0*M_PI));
     mip_controller->set_name("mip_controller");
 
     auto torque_converter = builder.AddSystem(std::make_unique<TorqueCombiner<double>>());
@@ -182,7 +185,7 @@ int main(int argc, char* argv[])
     initial_state[Q_X_IDX] = q.x();
     initial_state[Q_Y_IDX] = q.y();
     initial_state[Q_Z_IDX] = q.z();
-    initial_state[Z_IDX] = cfg.R;
+    initial_state[Z_IDX] = w_r;
     Context<double>& plant_context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
     VectorBase<double>& state = plant_context.get_mutable_continuous_state_vector();
     state.SetFromVector(initial_state);
