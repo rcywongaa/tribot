@@ -5,16 +5,41 @@
 #include "drake/multibody/parsing/parser.h"
 #include "drake/multibody/tree/uniform_gravity_field_element.h"
 #include "drake/common/eigen_types.h"
+#include "drake/systems/rendering/multibody_position_to_geometry_pose.h"
+
 #include <Eigen/Dense>
 
 using namespace drake;
+
+void add_plant_visuals(
+        systems::DiagramBuilder<double>* builder,
+        geometry::SceneGraph<double>* scene_graph,
+        multibody::MultibodyPlant<double>& mbp,
+        const std::string model_file,
+        const systems::OutputPort<double>& pose_output_port)
+{
+    multibody::Parser parser(&mbp, scene_graph);
+    auto model_id = parser.AddModelFromFile(model_file);
+    mbp.Finalize();
+
+    auto source_id = *(mbp.get_source_id());
+
+    auto multibody_position_to_geometry_pose = builder->AddSystem<systems::rendering::MultibodyPositionToGeometryPose<double>>(mbp);
+    builder->Connect(pose_output_port,
+            multibody_position_to_geometry_pose->get_input_port());
+    builder->Connect(
+            multibody_position_to_geometry_pose->get_output_port(),
+            scene_graph->get_source_pose_port(source_id));
+
+    geometry::ConnectDrakeVisualizer(builder, *scene_graph);
+}
 
 drake::multibody::MultibodyPlant<double>& create_default_plant(std::string model_filename, drake::systems::DiagramBuilder<double>& builder, double ground_offset)
 {
     // If greater than zero, the plant is modeled as a system with
     // discrete updates and period equal to this time_step.
     // If 0, the plant is modeled as a continuous system.
-    auto pair = drake::multibody::AddMultibodyPlantSceneGraph(&builder, std::make_unique<drake::multibody::MultibodyPlant<double>>(0));
+    auto pair = drake::multibody::AddMultibodyPlantSceneGraph(&builder);
 
     drake::multibody::MultibodyPlant<double>& plant = pair.plant;
     drake::geometry::SceneGraph<double>& scene_graph = pair.scene_graph;

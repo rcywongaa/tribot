@@ -15,7 +15,6 @@
 #include "StateConverter.hpp"
 #include "Inspector.hpp"
 #include "UnibotPlant.hpp"
-#include "UnibotVisualizer.hpp"
 
 using namespace Eigen;
 using namespace drake;
@@ -152,7 +151,8 @@ int main(int argc, char* argv[])
     builder.Connect(torque_converter->get_torque_output_port(), torque_inspector->get_input_port());
     builder.Connect(torque_inspector->get_output_port(), plant->get_actuation_input_port());
 
-    UnibotVisualizer::AddToBuilder(&builder, plant->get_state_output_port());
+    auto scene_graph = builder.AddSystem<geometry::SceneGraph>();
+    add_plant_visuals(&builder, scene_graph, plant->get_visual_mbp(), getResDir() + "unibot.sdf", plant->get_pose_output_port());
 
     auto diagram = builder.Build();
 

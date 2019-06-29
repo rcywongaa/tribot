@@ -5,6 +5,19 @@
 #include "drake/systems/framework/diagram.h"
 #include "drake/multibody/plant/multibody_plant.h"
 
+
+/**
+ * @brief Uses the pose_output_port and model_file to generate visuals for the plant
+ *
+ * Creates a MultibodyPlant from the model_file
+ * Connects pose_output_port MultibodyPositionToGeometryPose and then to SceneGraph
+ */
+void add_plant_visuals(
+        drake::systems::DiagramBuilder<double>* builder,
+        drake::geometry::SceneGraph<double>* scene_graph,
+        drake::multibody::MultibodyPlant<double>& mbp,
+        const std::string model_file,
+        const drake::systems::OutputPort<double>& pose_output_port);
 /**
  * @brief Creates a plant and scene graph and connects scene graph to visualizer
  * @return The plant created

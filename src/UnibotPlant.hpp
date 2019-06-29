@@ -1,4 +1,6 @@
 #include "drake/systems/framework/leaf_system.h"
+#include "drake/multibody/plant/multibody_plant.h"
+
 
 namespace UnibotStateIndex
 {
@@ -23,6 +25,24 @@ namespace UnibotStateIndex
         NUM_STATES
     };
 }
+
+namespace UnibotPoseIndex
+{
+    enum UnibotPoseIndex
+    {
+        Q_W = 0,
+        Q_X,
+        Q_Y,
+        Q_Z,
+        X,
+        Y,
+        Z,
+        ALPHA,
+        BETA,
+        NUM_POSES
+    };
+}
+
 
 struct UnibotConfig
 {
@@ -52,16 +72,30 @@ class UnibotPlant : public drake::systems::LeafSystem<T>
 
         UnibotPlant(UnibotConfig config);
         const drake::systems::OutputPort<T>& get_state_output_port() const;
+        const drake::systems::OutputPort<T>& get_pose_output_port() const;
         const drake::systems::InputPort<T>& get_actuation_input_port() const;
         void SetDefaultState(const drake::systems::Context<T>&, drake::systems::State<T>* state) const override;
 
         const UnibotConfig getConfig() const;
+
+        drake::multibody::MultibodyPlant<T>& get_visual_mbp();
     private:
         void DoCalcTimeDerivatives(
                 const drake::systems::Context<T>& context,
                 drake::systems::ContinuousState<T>* derivatives) const override;
         void copyStateOut(const drake::systems::Context<T> &context, drake::systems::BasicVector<T> *output) const;
+        void copyPoseOut(const drake::systems::Context<T> &context, drake::systems::BasicVector<T> *output) const;
         int state_port_idx;
+        int pose_port_idx;
         int torque_port_idx;
         UnibotConfig cfg;
+        drake::multibody::MultibodyPlant<T> mbp;
 };
+
+namespace drake {
+namespace systems {
+namespace scalar_conversion {
+template <> struct Traits<UnibotPlant> : public NonSymbolicTraits {};
+}  // namespace scalar_conversion
+}  // namespace systems
+}  // namespace drake

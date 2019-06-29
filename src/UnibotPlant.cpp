@@ -3,7 +3,6 @@
 #include <cmath>
 
 using namespace drake;
-using namespace UnibotStateIndex;
 
 const double g = 9.81;
 
@@ -11,17 +10,24 @@ template <typename T>
 UnibotPlant<T>::UnibotPlant(UnibotConfig config) :
     systems::LeafSystem<T>(systems::SystemTypeTag<UnibotPlant>{}),
     cfg(config),
-    state_port_idx(this->DeclareVectorOutputPort("state_output", systems::BasicVector<T>(NUM_STATES), &UnibotPlant::copyStateOut).get_index()),
+    state_port_idx(this->DeclareVectorOutputPort("state_output", systems::BasicVector<T>(UnibotStateIndex::NUM_STATES), &UnibotPlant::copyStateOut, {this->all_state_ticket()}).get_index()),
+    pose_port_idx(this->DeclareVectorOutputPort("pose_output", systems::BasicVector<T>(UnibotPoseIndex::NUM_POSES), &UnibotPlant::copyPoseOut, {this->all_state_ticket()}).get_index()),
     torque_port_idx(this->DeclareVectorInputPort("torque_input", systems::BasicVector<T>(2)).get_index())
 {
     //x, y, z, roll, pitch, yaw, alpha, beta, + velocities)
-    this->DeclareContinuousState(NUM_STATES);
+    this->DeclareContinuousState(UnibotStateIndex::NUM_STATES);
 }
 
 template <typename T>
 const drake::systems::OutputPort<T>& UnibotPlant<T>::get_state_output_port() const
 {
     return drake::systems::System<T>::get_output_port(state_port_idx);
+}
+
+template <typename T>
+const drake::systems::OutputPort<T>& UnibotPlant<T>::get_pose_output_port() const
+{
+    return drake::systems::System<T>::get_output_port(pose_port_idx);
 }
 
 template <typename T>
@@ -37,14 +43,21 @@ const UnibotConfig UnibotPlant<T>::getConfig() const
 }
 
 template <typename T>
+drake::multibody::MultibodyPlant<T>& UnibotPlant<T>::get_visual_mbp()
+{
+    return mbp;
+}
+
+template <typename T>
 void UnibotPlant<T>::DoCalcTimeDerivatives(
         const systems::Context<T> &context,
         systems::ContinuousState<T> *derivatives) const
 {
+    using namespace UnibotStateIndex;
     // Reference frame is at the center of the wheel
     const systems::VectorBase<T>& x = context.get_continuous_state_vector();
-    const Vector1<T> u = this->EvalVectorInput(context, torque_port_idx)->get_value();
-    Eigen::Matrix<T, NUM_STATES, 1> x_d;
+    const Vector2<T> u = this->EvalVectorInput(context, torque_port_idx)->get_value();
+    Eigen::Matrix<T, UnibotStateIndex::NUM_STATES, 1> x_d;
     x_d[X] = x[X_D];
     x_d[Y] = x[Y_D];
     x_d[Z] = x[Z_D];
@@ -87,7 +100,7 @@ template <typename T>
 void UnibotPlant<T>::SetDefaultState(const systems::Context<T>&, systems::State<T>* state) const
 {
     systems::VectorBase<T>& mutable_state = state->get_mutable_continuous_state().get_mutable_vector();
-    mutable_state.SetFromVector(Eigen::Matrix<T, NUM_STATES, 1>::Zero());
+    mutable_state.SetFromVector(Eigen::Matrix<T, UnibotStateIndex::NUM_STATES, 1>::Zero());
 }
 
 template <typename T>
@@ -97,5 +110,28 @@ void UnibotPlant<T>::copyStateOut(const systems::Context<T> &context,
     output->set_value(context.get_continuous_state_vector().CopyToVector());
 }
 
-DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
+template <typename T>
+void UnibotPlant<T>::copyPoseOut(const systems::Context<T> &context,
+        systems::BasicVector<T> *output) const
+{
+    using namespace UnibotPoseIndex;
+    const VectorX<T> x = context.get_continuous_state_vector().CopyToVector();
+    Eigen::Matrix<T, NUM_POSES, 1> pose;
+    Eigen::Quaternion<T> q;
+    q = Eigen::AngleAxis<T>(x[UnibotStateIndex::ROLL], Eigen::Vector3d::UnitX()) *
+        Eigen::AngleAxis<T>(x[UnibotStateIndex::PITCH], Eigen::Vector3d::UnitY()) *
+        Eigen::AngleAxis<T>(x[UnibotStateIndex::YAW], Eigen::Vector3d::UnitZ());
+    pose[Q_W] = q.w();
+    pose[Q_X] = q.x();
+    pose[Q_Y] = q.y();
+    pose[Q_Z] = q.z();
+    pose[X] = x[UnibotStateIndex::X];
+    pose[Y] = x[UnibotStateIndex::Y];
+    pose[Z] = x[UnibotStateIndex::Z];
+    pose[ALPHA] = x[UnibotStateIndex::ALPHA];
+    pose[BETA] = x[UnibotStateIndex::BETA];
+    output->set_value(pose);
+}
+
+DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_NONSYMBOLIC_SCALARS(
     class UnibotPlant)
