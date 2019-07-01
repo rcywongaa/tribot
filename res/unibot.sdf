@@ -42,8 +42,8 @@
       <inertial>
         <mass>0.1</mass>
         <inertia>
-          <ixx>0.03333333333333333</ixx>
-          <iyy>0.03333333333333333</iyy>
+          <ixx>0.008333333333333333</ixx>
+          <iyy>0.008333333333333333</iyy>
           <izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
@@ -71,10 +71,11 @@
     <link name='link2'>
       <pose>0 0 1.0 0 0 0</pose>
       <inertial>
+        <pose>0 0 -0.4 0 0 0</pose>
         <mass>0.08</mass>
         <inertia>
-          <ixx>0.017066666666666667</ixx>
-          <iyy>0.017066666666666667</iyy>
+          <ixx>0.004266666666666667</ixx>
+          <iyy>0.004266666666666667</iyy>
           <izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>

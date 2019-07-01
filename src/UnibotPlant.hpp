@@ -48,6 +48,7 @@ struct UnibotConfig
 {
     double w_r; // wheel radius
     double w_m; // wheel mass
+    double w_t; // wheel thickness
     double l1_m; // link1 mass
     double l1_l; // link1 length
     double l2_m; // link2 mass

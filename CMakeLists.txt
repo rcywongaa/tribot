@@ -23,6 +23,7 @@ add_executable(unibot
 target_link_libraries(unibot
   drake::drake drake::drake-common-text-logging-gflags gflags_shared
 )
+target_compile_options(unibot PRIVATE "-Wno-format")
 
 add_executable(acrobot
     src/acrobot_main.cpp

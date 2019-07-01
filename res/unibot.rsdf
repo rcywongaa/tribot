@@ -62,8 +62,8 @@
       <inertial>
         <mass><%= link1_mass %></mass>
         <inertia>
-          <ixx><%= 1.0/3.0*link1_mass*link1_length**2 %></ixx>
-          <iyy><%= 1.0/3.0*link1_mass*link1_length**2 %></iyy>
+          <ixx><%= 1.0/12.0*link1_mass*link1_length**2 %></ixx>
+          <iyy><%= 1.0/12.0*link1_mass*link1_length**2 %></iyy>
           <izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
@@ -91,10 +91,11 @@
     <link name='link2'>
       <pose>0 0 <%= link1_length %> 0 0 0</pose>
       <inertial>
+        <pose>0 0 <%= -link2_length/2.0 %> 0 0 0</pose>
         <mass><%= link2_mass %></mass>
         <inertia>
-          <ixx><%= 1.0/3.0*link2_mass*link2_length**2 %></ixx>
-          <iyy><%= 1.0/3.0*link2_mass*link2_length**2 %></iyy>
+          <ixx><%= 1.0/12.0*link2_mass*link2_length**2 %></ixx>
+          <iyy><%= 1.0/12.0*link2_mass*link2_length**2 %></iyy>
           <izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>

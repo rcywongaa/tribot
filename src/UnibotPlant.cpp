@@ -1,6 +1,8 @@
 #include "UnibotPlant.hpp"
 
 #include <cmath>
+#include "drake/math/roll_pitch_yaw.h"
+#include "drake/math/wrap_to.h"
 
 using namespace drake;
 
@@ -70,29 +72,113 @@ void UnibotPlant<T>::DoCalcTimeDerivatives(
     using std::cos;
     using std::sin;
     using std::pow;
+    using std::abs;
     T w_b_i = 0.5*cfg.w_m*pow(cfg.w_r, 2); // wheel moment of inertia w.r.t beta joint
     T w_g_i = w_b_i + cfg.w_m*pow(cfg.w_r, 2); // wheel moment of inertia w.r.t. ground
-    T l1_i = 1.0/3.0*cfg.l1_m*pow(cfg.l1_l, 2); // l1 moment of inertia
-    T l2_b_i = 1.0/3.0*cfg.l2_m*pow(cfg.l1_l - cfg.l2_l*cos(x[ALPHA]), 2); // l2 instantaneous moment of inertia w.r.t beta joint
-    T l2_a_i = 1.0/3.0*cfg.l2_m*pow(cfg.l2_l, 2); // l2 moment of inertia w.r.t. alpha joint
-    T p_b_i = cfg.p_m*pow(cfg.l1_l - cfg.l2_l*cos(x[ALPHA]), 2); // point mass instantaneous moment of inertia w.r.t. beta joint
     T w_z_i = 1.0/4.0*cfg.w_m*pow(cfg.w_r, 2);
 
     T wheel_speed = x[BETA_D] + x[PITCH_D]; // wheel_d = beta_d + pitch_d
+    //printf("wheel_speed = %f\n", wheel_speed);
     T wheel_acceleration = u[1] / w_b_i;
-    x_d[PITCH_D] = -u[1] / (l1_i + l2_b_i + p_b_i) + cfg.l1_l/2.0*sin(x[PITCH])*g/l1_i; // reactive torque + torque from gravity
-    x_d[BETA_D] = wheel_acceleration - x_d[PITCH_D]; // beta_dd = wheel_dd - pitch_dd
-    x_d[ALPHA_D] = u[0] / l2_a_i;
-    T acceleration = cfg.w_r * wheel_acceleration;
-    // Using derivative of the equation of precession: http://hyperphysics.phy-astr.gsu.edu/hbase/top.html
-    x_d[YAW_D] = -cfg.p_m*g*(cfg.l2_l*sin(x[ALPHA])) / (sin(x[ROLL])*w_b_i*pow(wheel_speed, 2)) * wheel_acceleration;
-    // Taken from https://arxiv.org/pdf/1007.5288.pdf
-    x_d[ROLL_D] = 2.0*w_z_i*x[YAW_D]*x_d[YAW_D]/(cfg.w_m*g*cfg.w_r);
-    T roll_acceleration = cfg.w_r*x_d[ROLL_D]; // linear acceleration caused by roll
-    x_d[X_D] = acceleration * cos(x[YAW]) + roll_acceleration*cos(x[ROLL])*sin(x[YAW]);
-    x_d[Y_D] = acceleration * sin(x[YAW]) + roll_acceleration*cos(x[ROLL])*cos(x[YAW]);
-    x_d[Z_D] = roll_acceleration*sin(x[ROLL]);
+    //printf("wheel_acceleration = %f\n", wheel_acceleration);
+    {
+        // MIP Equation of Motion
+        x_d[PITCH_D] = 0.0;
+        x_d[BETA_D] = wheel_acceleration - x_d[PITCH_D]; // beta_dd = wheel_dd - pitch_dd
+    }
+    {
+        // Acrobot Equation of Motion : http://underactuated.mit.edu/underactuated.html?chapter=acrobot
+        // The above equation use x[ROLL] = 0 as pointing horizontally downward
+        T q1 = math::wrap_to(x[ROLL] + M_PI, -M_PI, M_PI);
+        T q2 = math::wrap_to(x[ALPHA] + M_PI, -M_PI, M_PI);
+        T q1_d = x[ROLL_D];
+        T q2_d = x[ALPHA_D];
+        T tau = u[0];
+        T m1 = cfg.l1_m + cfg.w_m;
+        T m2 = cfg.l2_m + cfg.p_m;
+        T l1 = cfg.l1_l + cfg.w_r;
+        T lc1 = (cfg.l1_m*(cfg.w_r + cfg.l1_l/2.0) + cfg.w_m*cfg.w_r) / (cfg.l1_m + cfg.w_m);
+        // Moment of inertia taken about pivot
+        T I1 = 1.0/12.0*cfg.l1_m*pow(cfg.l1_l,2) + cfg.l1_m*pow(cfg.l1_l/2.0 + cfg.w_r, 2) // moment of inertia of link1 w.r.t pivot (ground)
+            + 1.0/12.0*cfg.w_m*(3.0*pow(cfg.w_r, 2) + pow(cfg.w_t, 2)) + cfg.w_m*pow(cfg.w_r, 2); // moment of inertia of wheels w.r.t. pivot (ground)
+        T l2 = cfg.l2_l;
+        T lc2 = (cfg.l2_m*(cfg.l2_l/2.0) + cfg.p_m*cfg.l2_l) / (cfg.l2_m + cfg.p_m);
+        // Moment of inertia taken about pivot
+        T I2 = 1.0/3.0*cfg.l2_m*pow(cfg.l2_l,2) + cfg.p_m*pow(cfg.l2_l, 2);
+        T c1 = cos(q1);
+        T c2 = cos(q2);
+        T c12 = cos(math::wrap_to(q1 + q2, -M_PI, M_PI));
+        T s1 = sin(q1);
+        T s2 = sin(q2);
+        T s12 = sin(math::wrap_to(q1 + q2, -M_PI, M_PI));
+        // Equation (5) : A * q1_dd + B * q2_dd + C = 0
+        T A = I1 + I2 + m2*pow(l1,2) + 2*m2*l1*lc2*c2;
+        printf("A = %f\n", A);
+        T B = I2 + m2*l1*lc2*c2;
+        printf("B = %f\n", B);
+        T C = -2.0*m2*l1*lc2*s2*q1_d*q2_d - m2*l1*lc2*s2*pow(q2_d,2) + m1*g*lc1*s1 + m2*g*(l1*s1 + lc2*s12);
+        // Equation (6) : D * q1_dd + E * q2_dd + F = 0
+        T D = I2 + m2*l1*lc2*c2;
+        printf("D = %f\n", D);
+        T E = I2;
+        printf("E = %f\n", E);
+        T F = (m2*l1*lc2*s2*pow(q1_d,2) + m2*g*lc2*s12) - tau;
 
+        x_d[ROLL_D] = (-F+E*C/B) / (D - E*A/B);
+        x_d[ALPHA_D] = (-C-A*x_d[ROLL_D])/B;
+    }
+    T acceleration = cfg.w_r * wheel_acceleration;
+    //printf("acceleration = %f\n", acceleration);
+
+    if (wheel_speed > 0.01)
+    {
+        // Using derivative of the equation of precession: http://hyperphysics.phy-astr.gsu.edu/hbase/top.html
+        // Assuming zero roll for now...
+        x_d[YAW_D] = cfg.p_m*g*cfg.l2_l*cos(x[ALPHA])*x[ALPHA_D]/(w_b_i * wheel_speed) +
+            cfg.p_m*g*cfg.l2_l*sin(x[ALPHA]) / (w_b_i*pow(wheel_speed, 2)) * wheel_acceleration;
+        x_d[ROLL_D] = 2.0*w_z_i*x[YAW_D]*x_d[YAW_D]/(cfg.w_m*g*cfg.w_r);
+    }
+    else
+    {
+        x_d[YAW_D] = 0.0;
+    }
+    // Taken from https://arxiv.org/pdf/1007.5288.pdf
+    T roll_acceleration = cfg.w_r*x_d[ROLL_D]; // linear acceleration caused by roll
+    //printf("roll_acceleration = %f\n", roll_acceleration);
+    x_d[X_D] = acceleration * cos(x[YAW]) + roll_acceleration*cos(x[ROLL])*sin(x[YAW]);
+    x_d[Y_D] = acceleration * sin(x[YAW]) - roll_acceleration*cos(x[ROLL])*cos(x[YAW]);
+    x_d[Z_D] = -roll_acceleration*sin(x[ROLL]);
+
+    printf("roll = %f\n", x[ROLL]);
+    printf("pitch = %f\n", x[PITCH]);
+    printf("yaw = %f\n", x[YAW]);
+    printf("x = %f\n", x[X]);
+    printf("y = %f\n", x[Y]);
+    printf("z = %f\n", x[Z]);
+    printf("alpha = %f\n", x[ALPHA]);
+    printf("beta = %f\n", x[BETA]);
+    printf("----------\n");
+    printf("roll_d = %f\n", x[ROLL_D]);
+    printf("pitch_d = %f\n", x[PITCH_D]);
+    printf("yaw_d = %f\n", x[YAW_D]);
+    printf("x_d = %f\n", x[X_D]);
+    printf("y_d = %f\n", x[Y_D]);
+    printf("z_d = %f\n", x[Z_D]);
+    printf("alpha_d = %f\n", x[ALPHA_D]);
+    printf("beta_d = %f\n", x[BETA_D]);
+    printf("----------\n");
+    printf("u_alpha = %f\n", u[0]);
+    printf("u_beta = %f\n", u[1]);
+    printf("----------\n");
+    printf("roll_dd = %f\n", x_d[ROLL_D]);
+    printf("pitch_dd = %f\n", x_d[PITCH_D]);
+    printf("yaw_dd = %f\n", x_d[YAW_D]);
+    printf("x_dd = %f\n", x_d[X_D]);
+    printf("y_dd = %f\n", x_d[Y_D]);
+    printf("z_dd = %f\n", x_d[Z_D]);
+    printf("alpha_dd = %f\n", x_d[ALPHA_D]);
+    printf("beta_dd = %f\n", x_d[BETA_D]);
+    printf("==========\n");
     derivatives->SetFromVector(x_d);
 }
 
@@ -118,9 +204,7 @@ void UnibotPlant<T>::copyPoseOut(const systems::Context<T> &context,
     const VectorX<T> x = context.get_continuous_state_vector().CopyToVector();
     Eigen::Matrix<T, NUM_POSES, 1> pose;
     Eigen::Quaternion<T> q;
-    q = Eigen::AngleAxis<T>(x[UnibotStateIndex::ROLL], Eigen::Vector3d::UnitX()) *
-        Eigen::AngleAxis<T>(x[UnibotStateIndex::PITCH], Eigen::Vector3d::UnitY()) *
-        Eigen::AngleAxis<T>(x[UnibotStateIndex::YAW], Eigen::Vector3d::UnitZ());
+    q = math::RollPitchYaw<T>(x[UnibotStateIndex::ROLL], x[UnibotStateIndex::PITCH], x[UnibotStateIndex::YAW]).ToQuaternion();
     pose[Q_W] = q.w();
     pose[Q_X] = q.x();
     pose[Q_Y] = q.y();

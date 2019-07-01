@@ -6,8 +6,9 @@
   <model name='Acrobot'>
 
     <link name='wheel'>
-      <pose>0 0 0 0 0 0</pose>
+      <pose>0 0 -0.2 0 0 0</pose>
       <inertial>
+        <pose>0 0 0.2 0 0 0</pose>
         <mass>0.2</mass>
         <inertia>
           <ixx>0.002006666666666667</ixx>
@@ -38,18 +39,19 @@
     </link>
 
     <link name='link1'>
-      <pose>0 0 0.5 0 0 0</pose>
+      <pose>0 0 0 0 0 0</pose>
       <inertial>
+        <pose>0 0 0.5 0 0 0</pose>
         <mass>0.1</mass>
         <inertia>
-          <ixx>0.03333333333333333</ixx>
-          <iyy>0.03333333333333333</iyy>
+          <ixx>0.008333333333333333</ixx>
+          <iyy>0.008333333333333333</iyy>
           <izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
       <visual name='link1_vis'>
-        <pose>0 0 0 0 0 0</pose>
+        <pose>0 0 0.5 0 0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.04</radius>
@@ -60,18 +62,19 @@
     </link>
 
     <link name='link2'>
-      <pose>0 0 0.6 0 0 0</pose>
+      <pose>0 0 1.0 0 0 0</pose>
       <inertial>
-        <mass>0.08</mass>
+        <pose>0 0 -0.4 0 0 0</pose>
+        <mass>0.8</mass>
         <inertia>
-          <ixx>0.017066666666666667</ixx>
-          <iyy>0.017066666666666667</iyy>
+          <ixx>0.04266666666666667</ixx>
+          <iyy>0.04266666666666667</iyy>
           <izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
       <visual name='link2_vis'>
-        <pose>0 0 0 0 0 0</pose>
+        <pose>0 0 -0.4 0 0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.02</radius>
@@ -103,7 +106,7 @@
     <joint name='theta' type='revolute'>
       <parent>world</parent>
       <child>wheel</child>
-      <pose>0 0 -0.2 0 0 0</pose>
+      <pose>0 0 0 0 0 0</pose>
       <axis>
         <xyz>1.0 0 0</xyz>
         <limit>
@@ -115,7 +118,7 @@
     <joint name='phi' type='revolute'>
       <parent>link1</parent>
       <child>link2</child>
-      <pose>0 0 0.4 0 0 0</pose>
+      <pose>0 0 0 0 0 0</pose>
       <axis>
         <xyz>1.0 0 0</xyz>
       </axis>
@@ -130,7 +133,7 @@
     <joint name='wheel_attach' type='fixed'>
       <parent>wheel</parent>
       <child>link1</child>
-      <pose>0 0 -0.5 0 0 0</pose>
+      <pose>0 0 0 0 0 0</pose>
     </joint>
 
   </model>

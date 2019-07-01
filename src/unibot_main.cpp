@@ -27,11 +27,14 @@ DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
         "Simulator::set_target_realtime_rate() for details.");
 
+DEFINE_bool(is_controlled, true, "Whether robot is controlled");
+
 const double w_r = 0.2; // wheel radius
 const double w_m = 0.2; // wheel mass
+const double w_t = 0.02; // wheel thickness
 const double l1_m = 0.1; // link1 mass
 const double l1_l = 1.0; // link1 length
-const double l2_m = 0.08; // link2 mass
+const double l2_m = 0.8; // link2 mass
 const double l2_l = 0.8; // link2 length
 const double p_m = 0.5; // point mass
 
@@ -87,6 +90,7 @@ int main(int argc, char* argv[])
     UnibotConfig unibot_config;
     unibot_config.w_r = w_r;
     unibot_config.w_m = w_m;
+    unibot_config.w_t = w_t;
     unibot_config.l1_m = l1_m;
     unibot_config.l1_l = l1_l;
     unibot_config.l2_m = l2_m;
@@ -158,14 +162,17 @@ int main(int argc, char* argv[])
 
     std::unique_ptr<systems::Context<double>> diagram_context = diagram->CreateDefaultContext();
 
-    Context<double>& torque_converter_context = diagram->GetMutableSubsystemContext(*torque_converter, diagram_context.get());
-    //torque_converter_context.FixInputPort(torque_converter->get_mip_input_port().get_index(), Vector1d::Zero());
-    //torque_converter_context.FixInputPort(torque_converter->get_acrobot_input_port().get_index(), Vector1d::Zero());
+    if (!FLAGS_is_controlled)
+    {
+        Context<double>& torque_converter_context = diagram->GetMutableSubsystemContext(*torque_converter, diagram_context.get());
+        torque_converter_context.FixInputPort(torque_converter->get_mip_input_port().get_index(), Vector1d::Zero());
+        torque_converter_context.FixInputPort(torque_converter->get_acrobot_input_port().get_index(), Vector1d::Zero());
+    }
 
     VectorX<double> initial_state(Eigen::Matrix<double, NUM_STATES, 1>::Zero());
-    initial_state[ROLL] = 0.0;
-    initial_state[PITCH] = 0.10*M_PI;
-    initial_state[YAW] = 0.0;
+    initial_state[ROLL] = -0.01*M_PI;
+    initial_state[PITCH] = 0.00*M_PI;
+    initial_state[YAW] = 0.00*M_PI;
     initial_state[Z] = w_r;
     Context<double>& plant_context = diagram->GetMutableSubsystemContext(*plant, diagram_context.get());
     VectorBase<double>& state = plant_context.get_mutable_continuous_state_vector();

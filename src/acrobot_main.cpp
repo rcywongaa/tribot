@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     if (!FLAGS_is_controlled) context.FixInputPort(plant.get_actuation_input_port().get_index(), Vector1d::Zero());
     // Get joints so that we can set initial conditions.
     const RevoluteJoint<double>& theta = plant.GetJointByName<RevoluteJoint>("theta");
-    theta.set_angle(&context, 0.02*M_PI);
+    theta.set_angle(&context, 0.01*M_PI);
 
     start_simulation(*diagram, std::move(diagram_context), FLAGS_target_realtime_rate);
 
