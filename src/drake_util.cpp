@@ -83,6 +83,8 @@ void start_simulation(drake::systems::Diagram<double>& diagram, std::unique_ptr<
     systems::Simulator<double> simulator(diagram, std::move(diagram_context));
     simulator.set_publish_every_time_step(false);
     simulator.set_target_realtime_rate(target_realtime_rate);
+    simulator.get_mutable_integrator().set_fixed_step_mode(true);
+    simulator.get_mutable_integrator().set_maximum_step_size(0.0001);
     simulator.Initialize();
     simulator.StepTo(std::numeric_limits<double>::infinity());
 }
