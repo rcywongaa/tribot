@@ -25,3 +25,14 @@ void add_plant_visuals(
 drake::multibody::MultibodyPlant<double>& create_default_plant(std::string model_filename, drake::systems::DiagramBuilder<double>& builder, double ground_offset = 0.0);
 
 void start_simulation(drake::systems::Diagram<double>& diagram, std::unique_ptr<drake::systems::Context<double>> diagram_context, double target_realtime_rate);
+
+/**
+ * @brief Prints the mass matrix of the given plant in the given context's configuration
+ *
+ * Example:
+ *     std::unique_ptr<systems::Context<double>> diagram_context = diagram->CreateDefaultContext();
+ *     Context<double>& context = diagram->GetMutableSubsystemContext(plant, diagram_context.get());
+ *
+ *     print_mass_matrix(plant, context);
+ */
+void print_mass_matrix(drake::multibody::MultibodyPlant<double>& plant, drake::systems::Context<double>& context);

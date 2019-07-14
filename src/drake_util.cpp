@@ -88,3 +88,11 @@ void start_simulation(drake::systems::Diagram<double>& diagram, std::unique_ptr<
     simulator.Initialize();
     simulator.StepTo(std::numeric_limits<double>::infinity());
 }
+
+
+void print_mass_matrix(drake::multibody::MultibodyPlant<double>& plant, drake::systems::Context<double>& context)
+{
+    Eigen::Matrix<double, -1, -1> H;
+    plant.CalcMassMatrixViaInverseDynamics(context, &H);
+    std::cout << "H = \n" << H << std::endl;
+}
