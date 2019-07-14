@@ -27,8 +27,6 @@ DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
         "Simulator::set_target_realtime_rate() for details.");
 
-DEFINE_bool(is_controlled, true, "Whether robot is controlled");
-
 const double w_r = 0.2; // wheel radius
 const double w_m = 0.2; // wheel mass
 const double w_t = 0.02; // wheel thickness
@@ -162,16 +160,13 @@ int main(int argc, char* argv[])
 
     std::unique_ptr<systems::Context<double>> diagram_context = diagram->CreateDefaultContext();
 
-    if (!FLAGS_is_controlled)
-    {
-        Context<double>& torque_converter_context = diagram->GetMutableSubsystemContext(*torque_converter, diagram_context.get());
-        torque_converter_context.FixInputPort(torque_converter->get_mip_input_port().get_index(), Vector1d::Zero());
-        torque_converter_context.FixInputPort(torque_converter->get_acrobot_input_port().get_index(), Vector1d::Zero());
-    }
+    Context<double>& torque_converter_context = diagram->GetMutableSubsystemContext(*torque_converter, diagram_context.get());
+    //torque_converter_context.FixInputPort(torque_converter->get_mip_input_port().get_index(), Vector1d::Zero());
+    //torque_converter_context.FixInputPort(torque_converter->get_acrobot_input_port().get_index(), Vector1d::Zero());
 
     VectorX<double> initial_state(Eigen::Matrix<double, NUM_STATES, 1>::Zero());
-    initial_state[ROLL] = -0.01*M_PI;
-    initial_state[PITCH] = 0.00*M_PI;
+    initial_state[ROLL] = 0.01*M_PI;
+    initial_state[PITCH] = 0.02*M_PI;
     initial_state[YAW] = 0.00*M_PI;
     initial_state[Z] = w_r;
     Context<double>& plant_context = diagram->GetMutableSubsystemContext(*plant, diagram_context.get());

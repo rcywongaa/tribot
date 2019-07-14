@@ -86,18 +86,57 @@ void UnibotPlant<T>::DoCalcTimeDerivatives(
     using std::sin;
     using std::pow;
     using std::abs;
-    T w_b_i = 0.5*cfg.w_m*pow(cfg.w_r, 2); // wheel moment of inertia w.r.t beta joint
-    T w_g_i = w_b_i + cfg.w_m*pow(cfg.w_r, 2); // wheel moment of inertia w.r.t. ground
-    T w_z_i = 1.0/4.0*cfg.w_m*pow(cfg.w_r, 2);
 
-    T wheel_speed = x[BETA_D] + x[PITCH_D]; // wheel_d = beta_d + pitch_d
-    //printf("wheel_speed = %f\n", wheel_speed);
-    T wheel_acceleration = u[1] / w_b_i;
-    //printf("wheel_acceleration = %f\n", wheel_acceleration);
     {
-        // MIP Equation of Motion
-        x_d[PITCH_D] = 0.0;
-        x_d[BETA_D] = wheel_acceleration - x_d[PITCH_D]; // beta_dd = wheel_dd - pitch_dd
+        // MIP Equation of Motion : http://renaissance.ucsd.edu/courses/mae143c/MIPdynamics.pdf
+        T m_w = cfg.w_m;
+        T m_r = cfg.l1_m + cfg.l2_m + cfg.p_m; // total mass of rod
+        T I_w = 1.0/2.0*cfg.w_m*pow(cfg.w_r, 2); // inertia of wheel
+
+        // Moment of inertia of link1
+        T I_l1 = 1.0/3.0*cfg.l1_m*pow(cfg.l1_l,2);
+
+        // l2 center of mass to l1 base distance
+        T l2_cm_l1_x = 0.5*cfg.l2_l*sin(x[ALPHA]);
+        T l2_cm_l1_y = cfg.l1_l - 0.5*cfg.l2_l*cos(x[ALPHA]);
+        T l2_cm_l1 = pow(pow(l2_cm_l1_x,2) + pow(l2_cm_l1_y,2), 0.5);
+        // Moment of inertia of link2
+        T I_l2 = 1.0/12*cfg.l2_m*pow(cfg.l2_l,2) + cfg.l2_m*pow(l2_cm_l1,2);
+
+        // point mass center of mass to l1 base distance
+        T p_cm_l1_x = cfg.l2_l*sin(x[ALPHA]);
+        T p_cm_l1_y = cfg.l1_l - cfg.l2_l*cos(x[ALPHA]);
+        T p_cm_l1 = pow(pow(p_cm_l1_x,2) + pow(p_cm_l1_y,2), 0.5);
+        // Moment of inertia of point mass
+        T I_p = cfg.p_m*pow(p_cm_l1,2);
+        T I_r = I_l1 + I_l2 + I_p; // inertia of rod
+
+        T tau = u[1];
+        T R = cfg.w_r;
+        T L = (cfg.l1_m*0.5*cfg.l1_l + cfg.l2_m*l2_cm_l1_y + cfg.p_m*p_cm_l1_y) / (cfg.l1_m + cfg.l2_m + cfg.p_m); // length from wheel center to rod center of mass
+        T L_T = cfg.l1_l; // length of rod
+        /*
+         * +x = right
+         * +y = up
+         * +z = out of paper
+         */
+        T theta = x[PITCH]; // rod angle from vertical, +z direction
+        T phi = x[PITCH] + x[BETA]; // wheel angle from horizontal, +z direction
+        T theta_d = x[PITCH_D];
+        T phi_d = x[PITCH_D] + x[BETA_D];
+        T theta_dd;
+        T phi_dd;
+
+        T A = m_r*R*L*cos(theta);
+        T B = I_r + m_r*pow(L,2);
+        T C = -(m_r*g*L*sin(theta) - tau);
+        T D = I_w + (m_r + m_w)*pow(R, 2);
+        T E = m_r*R*L*cos(theta);
+        T F = -(m_r*R*L*pow(theta,2)*sin(theta) + tau);
+        std::tie(phi_dd, theta_dd) = solve_simultaneous_equation(A, B, C, D, E, F);
+
+        x_d[PITCH_D] = theta_dd;
+        x_d[BETA_D] = phi_dd - theta_dd;
     }
     {
         // Acrobot Equation of Motion : http://underactuated.mit.edu/underactuated.html?chapter=acrobot
@@ -135,6 +174,10 @@ void UnibotPlant<T>::DoCalcTimeDerivatives(
 
         std::tie(x_d[ROLL_D], x_d[ALPHA_D]) = solve_simultaneous_equation(A, B, C, D, E, F);
     }
+
+    T wheel_acceleration = x_d[BETA_D] + x_d[PITCH_D];
+    T wheel_speed = x[BETA_D] + x[PITCH_D]; // wheel_d = beta_d + pitch_d
+    //printf("wheel_speed = %f\n", wheel_speed);
     T acceleration = cfg.w_r * wheel_acceleration;
     //printf("acceleration = %f\n", acceleration);
 
@@ -142,9 +185,10 @@ void UnibotPlant<T>::DoCalcTimeDerivatives(
     {
         // Using derivative of the equation of precession: http://hyperphysics.phy-astr.gsu.edu/hbase/top.html
         // Assuming zero roll for now...
-        x_d[YAW_D] = cfg.p_m*g*cfg.l2_l*cos(x[ALPHA])*x[ALPHA_D]/(w_b_i * wheel_speed) +
-            cfg.p_m*g*cfg.l2_l*sin(x[ALPHA]) / (w_b_i*pow(wheel_speed, 2)) * wheel_acceleration;
-        x_d[ROLL_D] = 2.0*w_z_i*x[YAW_D]*x_d[YAW_D]/(cfg.w_m*g*cfg.w_r);
+        //x_d[YAW_D] = cfg.p_m*g*cfg.l2_l*cos(x[ALPHA])*x[ALPHA_D]/(w_b_i * wheel_speed) +
+            //cfg.p_m*g*cfg.l2_l*sin(x[ALPHA]) / (w_b_i*pow(wheel_speed, 2)) * wheel_acceleration;
+        //x_d[ROLL_D] = 2.0*w_z_i*x[YAW_D]*x_d[YAW_D]/(cfg.w_m*g*cfg.w_r);
+        ;
     }
     else
     {
