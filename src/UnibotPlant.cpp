@@ -8,6 +8,19 @@ using namespace drake;
 
 const double g = 9.81;
 
+/*
+ * @brief Solves the simultaneous equation of the form
+ * A*x + B*y + C = 0
+ * D*x + E*y + F = 0
+ */
+template <typename T>
+std::pair<T, T> solve_simultaneous_equation(T A, T B, T C, T D, T E, T F)
+{
+    T x = (-F+E*C/B) / (D - E*A/B);
+    T y = (-C-A*x)/B;
+    return std::make_pair(x, y);
+};
+
 template <typename T>
 UnibotPlant<T>::UnibotPlant(UnibotConfig config) :
     systems::LeafSystem<T>(systems::SystemTypeTag<UnibotPlant>{}),
@@ -113,19 +126,14 @@ void UnibotPlant<T>::DoCalcTimeDerivatives(
         T s12 = sin(math::wrap_to(q1 + q2, -M_PI, M_PI));
         // Equation (5) : A * q1_dd + B * q2_dd + C = 0
         T A = I1 + I2 + m2*pow(l1,2) + 2*m2*l1*lc2*c2;
-        printf("A = %f\n", A);
         T B = I2 + m2*l1*lc2*c2;
-        printf("B = %f\n", B);
         T C = -2.0*m2*l1*lc2*s2*q1_d*q2_d - m2*l1*lc2*s2*pow(q2_d,2) + m1*g*lc1*s1 + m2*g*(l1*s1 + lc2*s12);
         // Equation (6) : D * q1_dd + E * q2_dd + F = 0
         T D = I2 + m2*l1*lc2*c2;
-        printf("D = %f\n", D);
         T E = I2;
-        printf("E = %f\n", E);
         T F = (m2*l1*lc2*s2*pow(q1_d,2) + m2*g*lc2*s12) - tau;
 
-        x_d[ROLL_D] = (-F+E*C/B) / (D - E*A/B);
-        x_d[ALPHA_D] = (-C-A*x_d[ROLL_D])/B;
+        std::tie(x_d[ROLL_D], x_d[ALPHA_D]) = solve_simultaneous_equation(A, B, C, D, E, F);
     }
     T acceleration = cfg.w_r * wheel_acceleration;
     //printf("acceleration = %f\n", acceleration);
