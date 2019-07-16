@@ -65,10 +65,10 @@
       <pose>0 0 1.0 0 0 0</pose>
       <inertial>
         <pose>0 0 -0.4 0 0 0</pose>
-        <mass>0.8</mass>
+        <mass>0.08</mass>
         <inertia>
-          <ixx>0.04266666666666667</ixx>
-          <iyy>0.04266666666666667</iyy>
+          <ixx>0.004266666666666667</ixx>
+          <iyy>0.004266666666666667</iyy>
           <izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>

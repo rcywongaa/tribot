@@ -3,22 +3,7 @@
   # erb generation
   # https://bitbucket.org/osrf/gazebo_models/src/b237ea45262f51ff8d72aaa96ef19f1288723c42/cart_rigid_suspension/model.rsdf?at=default&fileviewer=file-view-default
 
-  PI = 3.14159
-
-  wheel_mass = 0.2
-  wheel_radius = 0.2
-  wheel_thickness = 0.02
-
-  link1_mass = 0.1
-  link1_length = 1.0
-  link1_radius = 0.04
-
-  link2_mass = 0.8
-  link2_length = 0.8
-  link2_radius = 0.02
-
-  load_mass = 0.5
-  load_radius = 0.05
+  require_relative 'constants'
 %>
 <!-- THIS FILE IS GENERATED FROM acrobot.rsdf -->
 
@@ -26,14 +11,14 @@
   <model name='Acrobot'>
 
     <link name='wheel'>
-      <pose>0 0 <%= -wheel_radius %> 0 0 0</pose>
+      <pose>0 0 <%= -WHEEL_RADIUS %> 0 0 0</pose>
       <inertial>
-        <pose>0 0 <%= wheel_radius %> 0 0 0</pose>
-        <mass><%= wheel_mass %></mass>
+        <pose>0 0 <%= WHEEL_RADIUS %> 0 0 0</pose>
+        <mass><%= WHEEL_MASS %></mass>
         <inertia>
-          <ixx><%= 1.0/12.0*wheel_mass*(3.0*wheel_radius**2 + wheel_thickness**2) %></ixx>
-          <iyy><%= 1.0/2.0 * wheel_mass * wheel_radius**2 %></iyy>
-          <izz><%= 1.0/12.0*wheel_mass*(3.0*wheel_radius**2 + wheel_thickness**2) %></izz>
+          <ixx><%= 1.0/12.0*WHEEL_MASS*(3.0*WHEEL_RADIUS**2 + WHEEL_THICKNESS**2) %></ixx>
+          <iyy><%= 1.0/2.0 * WHEEL_MASS * WHEEL_RADIUS**2 %></iyy>
+          <izz><%= 1.0/12.0*WHEEL_MASS*(3.0*WHEEL_RADIUS**2 + WHEEL_THICKNESS**2) %></izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
@@ -42,8 +27,8 @@
         <pose>0 0 0 <%= PI/2.0 %> 0 0</pose>
         <geometry>
           <cylinder>
-            <radius><%= wheel_radius %></radius>
-            <length><%= wheel_thickness %></length>
+            <radius><%= WHEEL_RADIUS %></radius>
+            <length><%= WHEEL_THICKNESS %></length>
           </cylinder>
         </geometry>
       </visual>
@@ -51,8 +36,8 @@
         <pose>0 0 0 <%= PI/2.0 %> 0 0</pose>
         <geometry>
           <cylinder>
-            <radius><%= wheel_radius %></radius>
-            <length><%= wheel_thickness %></length>
+            <radius><%= WHEEL_RADIUS %></radius>
+            <length><%= WHEEL_THICKNESS %></length>
           </cylinder>
         </geometry>
       </collision>
@@ -61,53 +46,53 @@
     <link name='link1'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0 0 <%= link1_length/2.0%> 0 0 0</pose>
-        <mass><%= link1_mass %></mass>
+        <pose>0 0 <%= LINK1_LENGTH/2.0%> 0 0 0</pose>
+        <mass><%= LINK1_MASS %></mass>
         <inertia>
-          <ixx><%= 1.0/12.0*link1_mass*link1_length**2 %></ixx>
-          <iyy><%= 1.0/12.0*link1_mass*link1_length**2 %></iyy>
+          <ixx><%= 1.0/12.0*LINK1_MASS*LINK1_LENGTH**2 %></ixx>
+          <iyy><%= 1.0/12.0*LINK1_MASS*LINK1_LENGTH**2 %></iyy>
           <izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
       <visual name='link1_vis'>
-        <pose>0 0 <%= link1_length/2.0%> 0 0 0</pose>
+        <pose>0 0 <%= LINK1_LENGTH/2.0%> 0 0 0</pose>
         <geometry>
           <cylinder>
-            <radius><%= link1_radius %></radius>
-            <length><%= link1_length %></length>
+            <radius><%= LINK1_RADIUS %></radius>
+            <length><%= LINK1_LENGTH %></length>
           </cylinder>
         </geometry>
       </visual>
     </link>
 
     <link name='link2'>
-      <pose>0 0 <%= link1_length %> 0 0 0</pose>
+      <pose>0 0 <%= LINK1_LENGTH %> 0 0 0</pose>
       <inertial>
-        <pose>0 0 <%= -link2_length/2.0 %> 0 0 0</pose>
-        <mass><%= link2_mass %></mass>
+        <pose>0 0 <%= -LINK2_LENGTH/2.0 %> 0 0 0</pose>
+        <mass><%= LINK2_MASS %></mass>
         <inertia>
-          <ixx><%= 1.0/12.0*link2_mass*link2_length**2 %></ixx>
-          <iyy><%= 1.0/12.0*link2_mass*link2_length**2 %></iyy>
+          <ixx><%= 1.0/12.0*LINK2_MASS*LINK2_LENGTH**2 %></ixx>
+          <iyy><%= 1.0/12.0*LINK2_MASS*LINK2_LENGTH**2 %></iyy>
           <izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
       <visual name='link2_vis'>
-        <pose>0 0 <%= -link2_length/2.0 %> 0 0 0</pose>
+        <pose>0 0 <%= -LINK2_LENGTH/2.0 %> 0 0 0</pose>
         <geometry>
           <cylinder>
-            <radius><%= link2_radius %></radius>
-            <length><%= link2_length %></length>
+            <radius><%= LINK2_RADIUS %></radius>
+            <length><%= LINK2_LENGTH %></length>
           </cylinder>
         </geometry>
       </visual>
     </link>
 
     <link name='load'>
-      <pose>0 0 <%= link1_length - link2_length %> 0 0 0</pose>
+      <pose>0 0 <%= LINK1_LENGTH - LINK2_LENGTH %> 0 0 0</pose>
       <inertial>
-        <mass><%= load_mass %></mass>
+        <mass><%= LOAD_MASS %></mass>
         <inertia>
           <ixx>1.0e-20</ixx><iyy>1.0e-20</iyy><izz>1.0e-20</izz>
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
@@ -117,7 +102,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <sphere>
-            <radius><%= load_radius %></radius>
+            <radius><%= LOAD_RADIUS %></radius>
           </sphere>
         </geometry>
       </visual>

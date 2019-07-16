@@ -7,6 +7,8 @@
 #include "drake/common/eigen_types.h"
 #include "drake/multibody/tree/revolute_joint.h"
 
+#include "yaml-cpp/yaml.h"
+
 #include "meta.hpp"
 #include "drake_util.hpp"
 #include "unibot_util.hpp"
@@ -26,15 +28,6 @@ using namespace UnibotStateIndex;
 DEFINE_double(target_realtime_rate, 1.0,
         "Desired rate relative to real time.  See documentation for "
         "Simulator::set_target_realtime_rate() for details.");
-
-const double w_r = 0.2; // wheel radius
-const double w_m = 0.2; // wheel mass
-const double w_t = 0.02; // wheel thickness
-const double l1_m = 0.1; // link1 mass
-const double l1_l = 1.0; // link1 length
-const double l2_m = 0.8; // link2 mass
-const double l2_l = 0.8; // link2 length
-const double p_m = 0.5; // point mass
 
 template <typename T>
 void unibot_to_acrobot_state(const Eigen::VectorBlock<const VectorX<T>>& state, Eigen::VectorBlock<VectorX<T>>& output)
@@ -82,6 +75,16 @@ int main(int argc, char* argv[])
             "Launch drake-visualizer before running this example.");
     gflags::ParseCommandLineFlags(&argc, &argv, true);
     drake::logging::HandleSpdlogGflags();
+
+    YAML::Node constants = YAML::LoadFile(getResDir() + "constants.yaml");
+    const double w_r = constants["wheel_radius"].as<double>();
+    const double w_m = constants["wheel_mass"].as<double>();
+    const double w_t = constants["wheel_thickness"].as<double>();
+    const double l1_m = constants["link1_mass"].as<double>();
+    const double l1_l = constants["link1_length"].as<double>();
+    const double l2_m = constants["link2_mass"].as<double>();
+    const double l2_l = constants["link2_length"].as<double>();
+    const double p_m = constants["load_mass"].as<double>();
 
     DiagramBuilder<double> builder;
 

@@ -22,6 +22,7 @@ add_executable(unibot
     src/unibot_main.cpp)
 target_link_libraries(unibot
   drake::drake drake::drake-common-text-logging-gflags gflags_shared
+  yaml-cpp
 )
 target_compile_options(unibot PRIVATE "-Wno-format")
 
