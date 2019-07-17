@@ -1,0 +1,84 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\title{Unibot Notes}
+\date{2019-07-14}
+\author{Rufus Wong}
+\begin{document}
+
+\maketitle
+\pagenumbering{arabic}
+\newpage
+
+\section{Equations for Precession}
+
+\subsection{Precession Angular Acceleration}
+
+\subsubsection{Variables}
+
+\begin{itemize}
+    \item $\tau$ - Torque about wheel base caused by point mass and link2 mass
+    \item $l_2$ - Length of link2
+    \item $\alpha$ - Angle of link2, w.r.t. link1 about +x axis pointing out of paper
+    \item $m$ - Mass of point mass
+    \item $\theta$ - Precession angle
+    \item $\omega_p$ - Precession angular velocity ($\dot{\theta}$)
+    \item $I$ - Wheel moment of inertia w.r.t. center of wheel
+    \item $\omega$ - Wheel angular velocity w.r.t. +y axis pointing rightward
+    \item $L$ - Wheel angular momentum ($I\omega$)
+\end{itemize}
+
+\subsubsection{Equations v1 (Hyperphysics)}
+
+With the help of \url{http://hyperphysics.phy-astr.gsu.edu/hbase/top.html}
+
+\begin{equation}
+    \tau = mgl_2\sin\alpha = \frac{\Delta L}{\Delta t}
+\end{equation}
+\begin{equation*}
+    \Delta\theta = \arctan\frac{\Delta L}{L}
+\end{equation*}
+For small $\frac{\Delta L}{L}$, $\arctan\frac{\Delta L}{L} \approx \frac{\Delta L}{L}$
+\begin{equation*}
+    \Delta\theta \approx \frac{\Delta L}{L}
+\end{equation*}
+\begin{align*}
+    \omega_p &= \frac{\Delta\theta}{\Delta t}\\
+    &= \frac{\Delta L}{L \Delta t}\\
+    &= \frac{\tau}{L}
+\end{align*}
+\begin{equation}
+    \dot{\omega_p} = \frac{mgl_2}{L}\cos\alpha\dot{\alpha} - mgl_2\sin\alpha\frac{\dot{\omega}}{I\omega^2}
+\end{equation}
+
+%\subsubsection{Equation v2 (Vsauce)}
+
+%Must take into account the centrifugal acceleration of the point mass
+
+%\begin{equation}
+    %\tau = mgl_2\sin\alpha = \frac{\Delta L}{\Delta t}
+%\end{equation}
+%Angular acceleration of tilt of wheel $\ddot{\theta_w}$ is given by
+%\begin{align*}
+    %\tau &= 2rm_w\ddot{\theta_{\tau}}\\
+    %\ddot{\theta_{\tau}} &= \frac{\tau}{2rm_w}
+%\end{align*}
+
+%Velocity at top of wheel $v_\tau$ is given by
+%\begin{align*}
+    %v_{\tau} &= 2r\ddot{\theta_{\tau}}\\
+    %&= \frac{\tau}{m}
+%\end{align*}
+
+%Angular velocity of precession (yaw) $\omega_p$:
+%\begin{align*}
+    %\omega_p &= \frac{v_{\tau}}{r\omega}\\
+    %&= \frac{\tau}{mr\omega}
+%\end{align*}
+%\begin{equation}
+    %\dot{\omega_p} = \frac{\dot{\tau}}{mr\omega} - \frac{\tau}{mrw^{2}}\dot{\omega}
+%\end{equation}
+
+\end{document}
