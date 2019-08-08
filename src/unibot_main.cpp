@@ -168,7 +168,8 @@ int main(int argc, char* argv[])
     //torque_converter_context.FixInputPort(torque_converter->get_acrobot_input_port().get_index(), Vector1d::Zero());
 
     VectorX<double> initial_state(Eigen::Matrix<double, NUM_STATES, 1>::Zero());
-    initial_state[ROLL] = 0.01*M_PI;
+    initial_state[ALPHA] = 0.05*M_PI;
+    initial_state[ROLL] = 0.00*M_PI;
     initial_state[PITCH] = 0.02*M_PI;
     initial_state[YAW] = 0.00*M_PI;
     initial_state[Z] = w_r;

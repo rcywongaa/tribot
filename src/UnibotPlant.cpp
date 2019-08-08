@@ -7,6 +7,7 @@
 using namespace drake;
 
 const double g = 9.81;
+const double epsilon = 1.0e-5;
 
 /*
  * @brief Solves the simultaneous equation of the form
@@ -175,61 +176,108 @@ void UnibotPlant<T>::DoCalcTimeDerivatives(
         std::tie(x_d[ROLL_D], x_d[ALPHA_D]) = solve_simultaneous_equation(A, B, C, D, E, F);
     }
 
-    T wheel_acceleration = x_d[BETA_D] + x_d[PITCH_D];
     T wheel_speed = x[BETA_D] + x[PITCH_D]; // wheel_d = beta_d + pitch_d
-    //printf("wheel_speed = %f\n", wheel_speed);
+    T wheel_acceleration = x_d[BETA_D] + x_d[PITCH_D];
     T acceleration = cfg.w_r * wheel_acceleration;
+    T linear_speed = cfg.w_r * wheel_speed;
     //printf("acceleration = %f\n", acceleration);
 
-    if (wheel_speed > 0.01)
     {
         // Using derivative of the equation of precession: http://hyperphysics.phy-astr.gsu.edu/hbase/top.html
-        // Assuming zero roll for now...
-        //x_d[YAW_D] = cfg.p_m*g*cfg.l2_l*cos(x[ALPHA])*x[ALPHA_D]/(w_b_i * wheel_speed) +
-            //cfg.p_m*g*cfg.l2_l*sin(x[ALPHA]) / (w_b_i*pow(wheel_speed, 2)) * wheel_acceleration;
-        //x_d[ROLL_D] = 2.0*w_z_i*x[YAW_D]*x_d[YAW_D]/(cfg.w_m*g*cfg.w_r);
-        ;
+        T m = cfg.p_m;
+        T m_w = cfg.w_m;
+        printf("m = %f\n", m);
+        T I = 1.0/2.0*cfg.w_m*pow(cfg.w_r, 2);
+        printf("I = %f\n", I);
+        T w = wheel_speed;
+        printf("w = %f\n", w);
+        T w_d = wheel_acceleration;
+        printf("w_d = %f\n", w_d);
+        T w_p = x[YAW_D];
+        printf("w_p = %f\n", w_p);
+        T l_2 = cfg.l2_l;
+        printf("l_2 = %f\n", l_2);
+        T l_1 = cfg.l1_l;
+        T alpha = x[ALPHA];
+        printf("alpha = %f\n", alpha);
+        T alpha_d = x[ALPHA_D];
+        printf("alpha_d = %f\n", alpha_d);
+        T r_w = cfg.w_r;
+        //T rho = x[ROLL];
+        //T rho_d = x[ROLL_D];
+        T rho = 0.0;
+        T rho_d = 0.0;
+        T tau_g = m*g*(-(r_w + l_1)*sin(rho) + l_2*sin(rho+alpha));
+        printf("tau_g = %f\n", tau_g);
+        T tau_g_d = m*g*(-(r_w+l_1)*cos(rho)*rho_d + l_2*cos(rho+alpha)*(rho_d+alpha_d));
+        printf("tau_g_d = %f\n", tau_g_d);
+        // Compute the fictitious centrifugal force
+        T tau_c = 0.0;
+        T tau_c_d = 0.0;
+        if (abs(w_p) > epsilon)
+        {
+            printf("----------\n");
+            T r_t = linear_speed / w_p; // current turning radius of unibot
+            printf("r_t = %f\n", r_t);
+            T f_c = m*pow(linear_speed,2)/r_t;
+            printf("f_c = %f\n", f_c);
+            tau_c = ((r_w+l_1)*cos(rho) - l_2*cos(rho-alpha))*f_c;
+            printf("tau_c = %f\n", tau_c);
+            tau_c_d = ((r_w+l_1)*(-sin(rho))*rho_d - l_2*(-sin(rho-alpha))*(rho_d-alpha_d))*f_c;
+            printf("tau_c_d = %f\n", tau_c_d);
+            printf("----------\n");
+        }
+        T tau = tau_g + tau_c;
+        printf("tau = %f\n", tau);
+        T tau_d = tau_g_d + tau_c_d;
+        printf("tau_d = %f\n", tau_d);
+
+        if (abs(w/(x[YAW_D] + epsilon)) > epsilon)
+        {
+            x_d[YAW_D] = tau/I*(-w_d/pow(w,2)) + (1.0/(I*w))*tau_d;
+            //x_d[ROLL_D] += 2.0*w_z_i*x[YAW_D]*x_d[YAW_D]/(cfg.w_m*g*cfg.w_r);
+        }
+        else
+        {
+            x_d[YAW_D] = 0.0;
+        }
+        printf("yaw_dd = %f\n", x_d[YAW_D]);
     }
-    else
-    {
-        x_d[YAW_D] = 0.0;
-    }
-    // Taken from https://arxiv.org/pdf/1007.5288.pdf
     T roll_acceleration = cfg.w_r*x_d[ROLL_D]; // linear acceleration caused by roll
     //printf("roll_acceleration = %f\n", roll_acceleration);
     x_d[X_D] = acceleration * cos(x[YAW]) + roll_acceleration*cos(x[ROLL])*sin(x[YAW]);
     x_d[Y_D] = acceleration * sin(x[YAW]) - roll_acceleration*cos(x[ROLL])*cos(x[YAW]);
     x_d[Z_D] = -roll_acceleration*sin(x[ROLL]);
 
-    printf("roll = %f\n", x[ROLL]);
-    printf("pitch = %f\n", x[PITCH]);
-    printf("yaw = %f\n", x[YAW]);
-    printf("x = %f\n", x[X]);
-    printf("y = %f\n", x[Y]);
-    printf("z = %f\n", x[Z]);
-    printf("alpha = %f\n", x[ALPHA]);
-    printf("beta = %f\n", x[BETA]);
-    printf("----------\n");
-    printf("roll_d = %f\n", x[ROLL_D]);
-    printf("pitch_d = %f\n", x[PITCH_D]);
+    //printf("roll = %f\n", x[ROLL]);
+    //printf("pitch = %f\n", x[PITCH]);
+    //printf("yaw = %f\n", x[YAW]);
+    //printf("x = %f\n", x[X]);
+    //printf("y = %f\n", x[Y]);
+    //printf("z = %f\n", x[Z]);
+    //printf("alpha = %f\n", x[ALPHA]);
+    //printf("beta = %f\n", x[BETA]);
+    //printf("----------\n");
+    //printf("roll_d = %f\n", x[ROLL_D]);
+    //printf("pitch_d = %f\n", x[PITCH_D]);
     printf("yaw_d = %f\n", x[YAW_D]);
-    printf("x_d = %f\n", x[X_D]);
-    printf("y_d = %f\n", x[Y_D]);
-    printf("z_d = %f\n", x[Z_D]);
-    printf("alpha_d = %f\n", x[ALPHA_D]);
-    printf("beta_d = %f\n", x[BETA_D]);
-    printf("----------\n");
-    printf("u_alpha = %f\n", u[0]);
-    printf("u_beta = %f\n", u[1]);
-    printf("----------\n");
-    printf("roll_dd = %f\n", x_d[ROLL_D]);
-    printf("pitch_dd = %f\n", x_d[PITCH_D]);
-    printf("yaw_dd = %f\n", x_d[YAW_D]);
-    printf("x_dd = %f\n", x_d[X_D]);
-    printf("y_dd = %f\n", x_d[Y_D]);
-    printf("z_dd = %f\n", x_d[Z_D]);
-    printf("alpha_dd = %f\n", x_d[ALPHA_D]);
-    printf("beta_dd = %f\n", x_d[BETA_D]);
+    //printf("x_d = %f\n", x[X_D]);
+    //printf("y_d = %f\n", x[Y_D]);
+    //printf("z_d = %f\n", x[Z_D]);
+    //printf("alpha_d = %f\n", x[ALPHA_D]);
+    //printf("beta_d = %f\n", x[BETA_D]);
+    //printf("----------\n");
+    //printf("u_alpha = %f\n", u[0]);
+    //printf("u_beta = %f\n", u[1]);
+    //printf("----------\n");
+    //printf("roll_dd = %f\n", x_d[ROLL_D]);
+    //printf("pitch_dd = %f\n", x_d[PITCH_D]);
+    //printf("yaw_dd = %f\n", x_d[YAW_D]);
+    //printf("x_dd = %f\n", x_d[X_D]);
+    //printf("y_dd = %f\n", x_d[Y_D]);
+    //printf("z_dd = %f\n", x_d[Z_D]);
+    //printf("alpha_dd = %f\n", x_d[ALPHA_D]);
+    //printf("beta_dd = %f\n", x_d[BETA_D]);
     printf("==========\n");
     derivatives->SetFromVector(x_d);
 }

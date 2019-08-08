@@ -81,7 +81,7 @@ drake::multibody::MultibodyPlant<double>& create_default_plant(std::string model
 void start_simulation(drake::systems::Diagram<double>& diagram, std::unique_ptr<drake::systems::Context<double>> diagram_context, double target_realtime_rate)
 {
     systems::Simulator<double> simulator(diagram, std::move(diagram_context));
-    simulator.set_publish_every_time_step(false);
+    simulator.set_publish_every_time_step(true);
     simulator.set_target_realtime_rate(target_realtime_rate);
     simulator.get_mutable_integrator().set_fixed_step_mode(true);
     simulator.get_mutable_integrator().set_maximum_step_size(0.0001);
